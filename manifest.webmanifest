@@ -1,0 +1,16 @@
+{
+  "name": "재물 길일 나침반",
+  "short_name": "재물 길일",
+  "description": "사주로 보는 돈 일 보기 좋은 날과 방향",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0e1322",
+  "theme_color": "#0e1322",
+  "lang": "ko",
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e1322" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f1e7" media="(prefers-color-scheme: light)">
+<meta name="description" content="생년월일시로 사주를 세우고, 주 단위로 돈 일 보기 좋은 날과 그날 향할 방향을 알려 드립니다.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="재물 길일">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icons/icon-180.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)} body{margin:0} img{max-width:100%} [hidden]{display:none!important}</style>
+<title>재물 길일 나침반</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;800&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* 레이아웃: 휴대폰 한 열. 화면 3개(입력 → 주간 리스트 → 날짜 상세)를 해시로 전환. 밤하늘 쪽빛 바탕에 금색 강조. */
+:root{
+  --bg:#0e1322; --panel:#182038; --panel2:#1f2a48; --fg:#f4f0e6; --muted:#c3bdab; --line:#34406a;
+  --gold:#f0c251; --gold-ink:#1b1402; --good:#4fd1a8; --bad:#ff6b6b; --warn:#ffb454; --water:#4f8df5;
+  --display:'Noto Serif KR',"Apple SD Gothic Neo",serif; --body:'Noto Sans KR',"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){ :root:not([data-theme="dark"]){
+  --bg:#f5f1e7; --panel:#ffffff; --panel2:#efe9d9; --fg:#1b1f30; --muted:#5a5f72; --line:#d6cfbc;
+  --gold:#b07d0c; --gold-ink:#ffffff; --good:#13835f; --bad:#c42f2f; --warn:#b4600a; --water:#2a63d6; color-scheme:light;
+}}
+:root[data-theme="light"]{
+  --bg:#f5f1e7; --panel:#ffffff; --panel2:#efe9d9; --fg:#1b1f30; --muted:#5a5f72; --line:#d6cfbc;
+  --gold:#b07d0c; --gold-ink:#ffffff; --good:#13835f; --bad:#c42f2f; --warn:#b4600a; --water:#2a63d6; color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.app{max-width:560px;margin:0 auto}
+.view[hidden]{display:none}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:14px 0 10px;display:grid;gap:10px}
+.bar h1{font-family:var(--display);font-weight:800;font-size:1.45rem;margin:0;line-height:1.2;text-wrap:balance}
+.bar .sub{color:var(--muted);font-size:.95rem}
+.nav{display:flex;align-items:center;gap:8px}
+.nav select{flex:1}
+.iconbtn{background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:10px;width:46px;height:46px;font-size:1.3rem;padding:0;flex:none}
+.back{background:transparent;color:var(--gold);border:0;font-weight:700;font-size:1.05rem;padding:6px 0;text-align:left}
+h2{font-family:var(--display);font-weight:800;font-size:1.25rem;margin:0 0 10px;text-wrap:balance}
+h3{font-size:1.05rem;margin:0 0 4px;font-weight:700}
+p{margin:0}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:14px}
+.grid{display:grid;gap:12px}
+label{display:grid;gap:6px;font-weight:700;font-size:.95rem}
+input,select{font:inherit;font-size:1.1rem;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);min-width:0;width:100%}
+input:focus,select:focus,button:focus-visible{outline:3px solid var(--gold);outline-offset:1px}
+button{font:inherit;font-weight:700;font-size:1.1rem;padding:14px 20px;border-radius:12px;border:0;cursor:pointer;background:var(--gold);color:var(--gold-ink);width:100%}
+.chk{display:flex;gap:10px;align-items:center;font-weight:500;font-size:.95rem}
+.chk input{width:24px;height:24px}
+.note{font-size:.9rem;color:var(--muted)}
+details summary{cursor:pointer;font-weight:700;color:var(--gold);padding:6px 0}
+/* 내 요약 띠 */
+.me{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.me .big{font-weight:700;font-size:1.05rem}
+.me .edit{background:transparent;border:1px solid var(--line);color:var(--fg);width:auto;padding:8px 12px;font-size:.9rem}
+/* 가장 가까운 길일 */
+.next{display:grid;grid-template-columns:48px 1fr;gap:12px;align-items:center;background:var(--gold);color:var(--gold-ink);border-radius:14px;padding:14px;margin-top:12px;text-align:left;border:0}
+.next .ic{font-size:2rem;line-height:1}
+.next b{font-size:1.15rem}
+.next small{display:block;font-size:.92rem;opacity:.85}
+/* 주간 리스트 */
+.week{display:grid;gap:10px;margin-top:12px}
+.dayrow{display:grid;grid-template-columns:64px 1fr 80px;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:left;color:var(--fg);width:100%;border-left:6px solid var(--line)}
+.dayrow.best{border-left-color:var(--gold)}
+.dayrow.today{outline:2px solid var(--gold)}
+.dayrow .wd{font-family:var(--display);font-size:1.5rem;font-weight:800;text-align:center;line-height:1.1}
+.dayrow .wd small{display:block;font-family:var(--body);font-size:.85rem;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.dayrow .wd.sun{color:var(--bad)} .dayrow .wd.sat{color:var(--water)}
+.dayrow .mid{min-width:0;display:grid;gap:3px}
+.dayrow .gz{font-weight:700;font-size:1rem}
+.dayrow .dirs{font-size:.95rem;color:var(--muted)}
+.dayrow .dirs b{color:var(--gold);font-size:1.1rem}
+.dayrow .sc{font-family:var(--display);font-size:1.7rem;font-weight:800;text-align:right;font-variant-numeric:tabular-nums;line-height:1}
+.dayrow .sc small{display:block;font-family:var(--body);font-size:.78rem;font-weight:700;margin-top:4px}
+.sc.g{color:var(--good)} .sc.b{color:var(--bad)} .sc.n{color:var(--muted)}
+/* 상세 */
+.hero{display:grid;gap:6px;margin-top:6px}
+.hero .date{font-family:var(--display);font-size:1.6rem;font-weight:800;line-height:1.2}
+.hero .score{font-family:var(--display);font-size:3rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.why{display:grid;gap:8px}
+.why div{font-size:.98rem;padding:10px 12px;border-radius:10px;background:var(--panel2);border-left:5px solid var(--line)}
+.why div.g{border-left-color:var(--good)} .why div.b{border-left-color:var(--bad)}
+.compass svg{width:100%;max-width:340px;height:auto;display:block;margin:0 auto}
+.card{background:var(--panel2);border-radius:12px;padding:14px;display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:start}
+.card .ic{font-size:1.8rem;line-height:1}
+.card p{font-size:.98rem}
+.pn{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.pn button,.copy{background:var(--panel2);color:var(--fg);border:1px solid var(--line);font-size:1rem;padding:12px}
+.pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.pillar{background:var(--panel2);border-radius:10px;padding:8px 4px;text-align:center;display:grid;gap:3px}
+.pillar .name{font-size:.8rem;color:var(--muted);font-weight:700}
+.pillar .han{font-family:var(--display);font-size:1.8rem;line-height:1.1;font-weight:800}
+.foot{font-size:.85rem;color:var(--muted);border-top:1px solid var(--line);padding-top:14px;margin-top:20px}
+@media (prefers-reduced-motion:no-preference){ .dayrow{transition:transform .12s} .dayrow:active{transform:scale(.985)} }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+<!-- 화면 1: 태어난 때 입력 -->
+<section class="view" id="v-input">
+  <div class="bar"><h1>재물 길일 나침반</h1><p class="sub">태어난 때를 넣으면 이번 주에 돈 일 보기 좋은 날과, 그날 어느 쪽으로 가면 좋은지 알려 드립니다. 입력은 이 기기에만 저장됩니다.</p></div>
+  <div class="panel grid">
+    <label>생년월일(양력)<input type="date" id="bdate" value="1979-11-18"></label>
+    <label>태어난 시각<input type="time" id="btime" value="23:55"></label>
+    <label>이름(표시용, 안 써도 됨)<input type="text" id="bname" value="" placeholder="예: 홍길동"></label>
+    <label class="chk"><input type="checkbox" id="optYaja" checked>밤 11시 이후에 태어났으면 그날을 생일로 계산합니다(사주에서는 밤 11시부터 다음 날로 치기도 합니다)</label>
+    <button id="run">이번 주 좋은 날 보기</button>
+    <details><summary>자세한 설정</summary>
+      <div class="grid" style="margin-top:8px">
+        <label class="chk"><input type="checkbox" id="optSolar" checked>서울의 실제 해 시각에 맞춰 30분 당겨 계산합니다(권장)</label>
+        <p class="note">태어난 시각을 모르면 12:00으로 두세요. 시각으로 보는 부분만 빠지고 나머지는 그대로입니다.<br>1987·1988년 5~10월생은 서머타임 때라 1시간을 빼고 넣으세요.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- 화면 2: 주간 리스트 -->
+<section class="view" id="v-week" hidden>
+  <div class="bar">
+    <h1 id="weekTitle">이번 주 돈 일 보기 좋은 날</h1>
+    <div class="nav">
+      <button class="iconbtn" id="wPrev" aria-label="지난주">‹</button>
+      <select id="wSel" aria-label="주 선택"></select>
+      <button class="iconbtn" id="wNext" aria-label="다음주">›</button>
+    </div>
+  </div>
+  <div class="me">
+    <div><div class="big" id="meLine"></div><div class="note" id="meSub"></div></div>
+    <button class="edit" id="toInput">입력 바꾸기</button>
+  </div>
+  <button class="next" id="nextBest"></button>
+  <div class="week" id="weekList"></div>
+  <button id="installBtn" class="copy" style="margin-top:12px" hidden>📲 홈 화면에 앱으로 설치하기</button>
+  <p class="note" id="iosHint" style="margin-top:10px" hidden>아이폰: 공유 버튼 → "홈 화면에 추가"를 누르면 앱처럼 쓸 수 있습니다.</p>
+  <p class="note" style="margin-top:10px">날짜를 누르면 그날 할 일, 피할 일, 어느 쪽으로 가면 좋은지가 나옵니다.</p>
+  <details class="panel"><summary>내 사주 자세히 보기</summary><p class="note" style="margin:6px 0 0">아래 한자는 읽을 줄 몰라도 됩니다. 그 밑의 설명만 보면 됩니다.</p>
+    <div class="pillars" id="pillars"></div>
+    <div class="grid" id="diag" style="margin-top:12px"></div>
+  </details>
+  <p class="foot">사주는 동양 명리학의 전통 해석이며 결과를 보장하지 않습니다. 돈이 걸린 결정은 계약 조건과 숫자로 판단하고, 이 앱은 날짜와 방향을 고를 때 참고로만 쓰세요.</p>
+</section>
+
+<!-- 화면 3: 날짜 상세 -->
+<section class="view" id="v-day" hidden>
+  <div class="bar"><button class="back" id="toWeek">‹ 주간 목록으로</button></div>
+  <div class="hero" id="dayHero"></div>
+  <div class="panel"><h2>이날 어느 쪽으로 가면 좋은가</h2><div class="compass"><svg id="compassSvg" viewBox="0 0 320 320" role="img" aria-label="재물 방위 나침반"></svg></div><div class="grid" id="legend" style="margin-top:12px"></div></div>
+  <div class="panel"><h2 id="whyTitle">이날 할 일과 피할 일</h2><div class="grid" id="todo"></div></div>
+  <div class="panel"><h2>이렇게 판단했습니다</h2><div class="why" id="dayWhy"></div></div>
+  <button class="copy" id="copyBtn" style="margin-top:14px">이날 정보 복사하기</button>
+  <div class="pn"><button id="dPrev">‹ 전날</button><button id="dNext">다음날 ›</button></div>
+</section>
+
+</div>
+
+<script>
+// ===== 기초 표 =====
+const SK=['갑','을','병','정','무','기','경','신','임','계'], SH='甲乙丙丁戊己庚辛壬癸';
+const BK=['자','축','인','묘','진','사','오','미','신','유','술','해'], BH='子丑寅卯辰巳午未申酉戌亥';
+const ANIMAL=['쥐','소','호랑이','토끼','용','뱀','말','양','원숭이','닭','개','돼지'];
+const EK=['나무(목)','불(화)','흙(토)','쇠(금)','물(수)'];
+const STEM_EL=[0,0,1,1,2,2,3,3,4,4];
+const BR_EL=[4,2,0,0,2,1,1,2,3,3,2,4];
+const BR_MAIN=[9,5,0,1,4,2,3,5,6,7,4,8];
+const GWIIN={0:[1,7],4:[1,7],6:[1,7],1:[0,8],5:[0,8],2:[11,9],3:[11,9],7:[2,6],8:[5,3],9:[5,3]};
+const YUKHAP={0:1,1:0,2:11,11:2,3:10,10:3,4:9,9:4,5:8,8:5,6:7,7:6};
+const SAMHAP=[[8,0,4],[11,3,7],[2,6,10],[5,9,1]];
+const JAESIN={0:'동북',1:'동북',2:'서남',3:'서남',4:'북',5:'북',6:'동',7:'동',8:'남',9:'남'};
+const HUISIN={0:'동북',5:'동북',1:'서북',6:'서북',2:'서남',7:'서남',3:'남',8:'남',4:'동남',9:'동남'};
+const EL_DIR=['동','남','중앙','서','북'];
+const DIR_ANG={'북':0,'동북':45,'동':90,'동남':135,'남':180,'서남':225,'서':270,'서북':315};
+const WD='일월화수목금토';
+
+// ===== 천문 =====
+function jdn(y,m,d){const a=Math.floor((14-m)/12),y2=y+4800-a,m2=m+12*a-3;return d+Math.floor((153*m2+2)/5)+365*y2+Math.floor(y2/4)-Math.floor(y2/100)+Math.floor(y2/400)-32045;}
+function fromJdn(J){const a=J+32044,b=Math.floor((4*a+3)/146097),c=a-Math.floor(146097*b/4),d=Math.floor((4*c+3)/1461),e=c-Math.floor(1461*d/4),m=Math.floor((5*e+2)/153);
+  return {d:e-Math.floor((153*m+2)/5)+1, m:m+3-12*Math.floor(m/10), y:100*b+d-4800+Math.floor(m/10)};}
+function sunLon(jd){const T=(jd-2451545)/36525,r=Math.PI/180;
+  const L0=280.46646+36000.76983*T+0.0003032*T*T, M=357.52911+35999.05029*T-0.0001537*T*T;
+  const C=(1.914602-0.004817*T-0.000014*T*T)*Math.sin(M*r)+(0.019993-0.000101*T)*Math.sin(2*M*r)+0.000289*Math.sin(3*M*r);
+  const O=125.04-1934.136*T; let lon=L0+C-0.00569-0.00478*Math.sin(O*r); lon%=360; if(lon<0)lon+=360; return lon;}
+function dayIdx(j){return ((j+49)%60+60)%60;}
+
+// ===== 사주 =====
+function saju(y,m,d,hh,mm,solar,yaja){
+  let min=hh*60+mm-(solar?30:0); let shift=0; if(min<0){min+=1440;shift=-1;}
+  const J=jdn(y,m,d)+shift; const civ=fromJdn(J); const h=min/60;
+  const lon=sunLon(J+(h-9-12)/24);
+  let sy=civ.y; if(lon>=270&&lon<315&&civ.m<=2) sy=civ.y-1;
+  const yi=((sy-4)%60+60)%60; const ys=yi%10, yb=yi%12;
+  const mi=Math.floor((((lon-315)%360)+360)%360/30); const mb=(2+mi)%12; const ms=((ys%5)*2+2+mi)%10;
+  const isLate=h>=23; const dJ=(isLate&&!yaja)?J+1:J; const di=dayIdx(dJ); const ds=di%10, db=di%12;
+  const hb=Math.floor(((h+1)%24)/2); const stemForHour=(isLate&&yaja)?dayIdx(J+1)%10:ds; const hs=((stemForHour%5)*2+hb)%10;
+  const me={year:{s:ys,b:yb},month:{s:ms,b:mb},day:{s:ds,b:db,idx:di},hour:{s:hs,b:hb}};
+  const meEl=STEM_EL[ds], gen=(meEl+4)%5; let support=0, tot=0;
+  [me.year,me.month,me.day,me.hour].forEach((p,i)=>{ if(i!==2){tot++; if([meEl,gen].includes(STEM_EL[p.s])) support++;}
+    const w=(i===1)?2:1; tot+=w; if([meEl,gen].includes(BR_EL[p.b])) support+=w; });
+  me.ratio=support/tot; me.weak=me.ratio<0.45; me.strong=me.ratio>=0.55; me.jaeEl=(meEl+2)%5; me.meEl=meEl;
+  return me;
+}
+function relOf(me,st){return (STEM_EL[st]-STEM_EL[me]+5)%5;}
+
+// ===== 점수 (쉬운 말 설명 포함) =====
+function scoreDay(me,J){
+  const di=dayIdx(J), s=di%10, b=di%12; const reasons=[]; let sc=0; const mul=me.weak?0.6:1;
+  const add=(txt,w)=>{reasons.push({txt,w}); sc+=w;};
+  if(STEM_EL[s]===me.jaeEl) add(`이날은 내가 다스리는 돈 기운이 겉으로 드러난 날입니다. 돈이 들어오기 좋습니다.`,3*mul);
+  if(STEM_EL[BR_MAIN[b]]===me.jaeEl) add(`이날은 바탕에도 돈 기운이 깔려 있어 두 겹입니다.`,3*mul);
+  if(GWIIN[me.day.s].includes(b)) add(`나를 도와주는 사람이 나타나는 날입니다.`,2);
+  if((s+5)%10===me.day.s) add(`이날 기운이 나와 손을 잡는 짝이라 거래 상대와 뜻이 맞습니다.`,2);
+  if(YUKHAP[b]===me.day.b) add(`이날은 내 생일과 짝을 이루는 날이라 일이 순조롭습니다.`,2);
+  if(b!==me.day.b&&SAMHAP.some(g=>g.includes(b)&&g.includes(me.day.b))) add(`이날은 내 생일과 같은 편인 날입니다.`,1.5);
+  if((b+6)%12===me.day.b) add(`이날은 내 생일과 정면으로 부딪치는 날입니다. 계약·송금은 피합니다.`,-3);
+  if((b+6)%12===me.year.b) add(`이날은 내 띠(${ANIMAL[me.year.b]}띠)와 부딪치는 날입니다.`,-2);
+  const st=Math.floor(me.day.idx/10)*10; if(b===(st+10)%12||b===(st+11)%12) add(`나에게는 빈칸 같은 날이라 일이 헛돌기 쉽습니다.`,-2);
+  if(relOf(me.day.s,s)===3&&(s%2)===(me.day.s%2)) add(`이날 기운이 나를 세게 누르는 날입니다. 무리한 결정을 피합니다.`,-1.5);
+  if(me.weak){const r=relOf(me.day.s,s); if(r===0||r===4) add(`내 힘을 보태 주는 날이라 돈을 지키기 좋습니다.`,1);}
+  return {J,s,b,score:Math.round(sc*10)/10,reasons};
+}
+const grade=sc=>sc>=4?['최상','g']:sc>=2?['좋음','g']:sc>-2?['보통','n']:['피함','b'];
+const ONE={'최상':'계약·입금·투자 결정을 잡기 가장 좋은 날','좋음':'돈 일을 보기에 무난한 날','보통':'하던 일을 마무리하는 날','피함':'계약·송금·투자 결정을 미루는 날'};
+const DEG={'북':'0°','동북':'45°','동':'90°','동남':'135°','남':'180°','서남':'225°','서':'270°','서북':'315°'};
+const ADVICE={
+  '최상':[['✅','계약서 서명, 큰 금액 입금·출금, 투자 결정, 영업 미팅을 이날로 잡습니다.'],['🧭','은행·계약 장소는 위 나침반의 금색 쪽, 사람 만날 장소는 주황 점 쪽으로 잡습니다.']],
+  '좋음':[['✅','돈 일을 보기에 무난합니다. 급하지 않은 큰 결정은 더 좋은 날이 있으면 그날로 미룹니다.'],['🧭','위 나침반 방향을 맞출 수 있으면 맞추고, 못 맞춰도 무리하지 않습니다.']],
+  '보통':[['➖','평소대로 진행합니다. 새로 벌이기보다 하던 일을 마무리합니다.'],['🧭','위 나침반 방향은 참고만 합니다.']],
+  '피함':[['⛔','계약·송금·투자 결정·돈 빌려주기는 다른 날로 미룹니다.'],['🛡️','이날은 지키는 날입니다. 지출 점검, 서류 정리, 미수금 확인에 씁니다.']],
+};
+
+// ===== 상태 =====
+const $=id=>document.getElementById(id);
+let ME=null, WEEK0=0, weekOff=0, selJ=null;
+const now=new Date(); const J_TODAY=jdn(now.getFullYear(),now.getMonth()+1,now.getDate());
+WEEK0=J_TODAY-((J_TODAY+1)%7+6)%7;
+const fmt=J=>{const c=fromJdn(J);return `${c.y}.${String(c.m).padStart(2,'0')}.${String(c.d).padStart(2,'0')}`;};
+const fmtK=J=>{const c=fromJdn(J);return `${c.m}월 ${c.d}일 ${WD[(J+1)%7]}요일`;};
+function readInput(){
+  const [y,m,d]=($('bdate').value||'').split('-').map(Number); if(!y) return false;
+  const [hh,mm]=($('btime').value||'12:00').split(':').map(Number);
+  ME=saju(y,m,d,hh,mm,$('optSolar').checked,$('optYaja').checked);
+  try{localStorage.setItem('jaemul',JSON.stringify({d:$('bdate').value,t:$('btime').value,n:$('bname').value,so:$('optSolar').checked,ya:$('optYaja').checked}));}catch(e){}
+  return true;
+}
+function show(v){ ['input','week','day'].forEach(k=>$('v-'+k).hidden=(k!==v)); window.scrollTo(0,0); if(location.hash!=='#'+v) history.replaceState(null,'','#'+v); }
+
+// ===== 화면 2 =====
+function renderWeek(){
+  const name=($('bname').value||'').trim(); const me=ME;
+  const gwDays=[]; for(let i=0;i<40&&gwDays.length<2;i++){const b=dayIdx(J_TODAY+i)%12; if(GWIIN[me.day.s].includes(b)) gwDays.push(J_TODAY+i);}
+  $('meLine').textContent=`${name?name+' 님은 ':''}돈 일을 ${EL_DIR[me.jaeEl]}쪽${EL_DIR[me.jaeEl]==='중앙'?'':'('+DEG[EL_DIR[me.jaeEl]]+')'}에서 보면 늘 유리합니다.`;
+  $('meSub').textContent=`도와주는 사람이 나타나는 날은 ${gwDays.map(fmtK).join(', ')}입니다.`;
+  const sel=$('wSel'); sel.innerHTML='';
+  for(let i=-1;i<=12;i++){const a=WEEK0+i*7,b=a+6; const lab=(i===-1?'지난주':i===0?'이번주':i===1?'다음주':`${i}주 뒤`)+` · ${fmt(a).slice(5)}~${fmt(b).slice(5)}`;
+    const o=document.createElement('option'); o.value=i; o.textContent=lab; sel.appendChild(o);}
+  sel.value=weekOff;
+  const a=WEEK0+weekOff*7;
+  $('weekTitle').textContent=(weekOff===0?'이번 주':weekOff===1?'다음 주':weekOff===-1?'지난주':`${weekOff}주 뒤`)+' 돈 일 보기 좋은 날';
+  // 가장 가까운 최상·좋음 날
+  let nb=null; for(let i=0;i<60&&!nb;i++){const x=scoreDay(me,J_TODAY+i); if(x.score>=4) nb=x;}
+  if(!nb) for(let i=0;i<60&&!nb;i++){const x=scoreDay(me,J_TODAY+i); if(x.score>=2) nb=x;}
+  if(nb){const dd=nb.J-J_TODAY; $('nextBest').innerHTML=`<div class="ic">⭐</div><div><b>${dd===0?'오늘':dd===1?'내일':dd+'일 뒤'} ${fmtK(nb.J)}</b><small>가장 가까운 ${grade(nb.score)[0]} 날입니다. ${ONE[grade(nb.score)[0]]}. 누르면 방향과 할 일이 나옵니다.</small></div>`; $('nextBest').dataset.j=nb.J; $('nextBest').hidden=false;} else $('nextBest').hidden=true;
+  const days=[]; for(let i=0;i<7;i++) days.push(scoreDay(me,a+i));
+  const best=Math.max(...days.map(x=>x.score));
+  $('weekList').innerHTML=days.map(x=>{const c=fromJdn(x.J); const w=(x.J+1)%7; const [gl,gc]=grade(x.score);
+    return `<button class="dayrow ${x.score===best&&best>=2?'best':''} ${x.J===J_TODAY?'today':''}" data-j="${x.J}">
+      <div class="wd ${w===0?'sun':w===6?'sat':''}">${WD[w]}<small>${c.m}/${c.d}</small></div>
+      <div class="mid"><div class="gz">${x.J===J_TODAY?'오늘 · ':''}${ANIMAL[x.b]}의 날</div>
+      <div class="dirs">${ONE[gl]}</div></div>
+      <div class="sc ${gc}">${x.score>0?'+':''}${x.score}<small>${gl} ›</small></div></button>`;}).join('');
+  $('weekList').querySelectorAll('.dayrow').forEach(b=>b.addEventListener('click',()=>{selJ=Number(b.dataset.j); renderDay(); show('day');}));
+  // 내 사주 자세히
+  const P=[['시간','태어난 시각',me.hour],['날','나',me.day],['달','태어난 달',me.month],['해','태어난 해',me.year]];
+  $('pillars').innerHTML=P.map(([n,ds,p])=>`<div class="pillar"><div class="name">${n}<br><span style="font-weight:500">${ds}</span></div><div class="han">${SH[p.s]}<br>${BH[p.b]}</div><div style="font-weight:700">${SK[p.s]}${BK[p.b]}</div></div>`).join('');
+  const pil=[me.year,me.month,me.day,me.hour]; let jaeCnt=0;
+  pil.forEach((p,i)=>{ if(i!==2&&STEM_EL[p.s]===me.jaeEl) jaeCnt++; if(STEM_EL[BR_MAIN[p.b]]===me.jaeEl) jaeCnt++; });
+  const gw=GWIIN[me.day.s]; const gwIn=pil.some(p=>gw.includes(p.b));
+  $('diag').innerHTML=[
+    ['🧑','나는 '+EK[me.meEl]+' 기운을 타고났습니다','태어난 날의 기운이 곧 나입니다. 돈·사람·날짜는 모두 이 기운을 기준으로 봅니다.'],
+    ['💰','내가 다스리는 돈 기운은 '+EK[me.jaeEl]+'이고, 타고난 사주 안에 '+jaeCnt+'개 있습니다', jaeCnt?'타고난 돈 기운이 있는 편입니다. 이 기운이 오는 날에 더 크게 움직입니다.':'타고난 돈 기운이 겉으로 드러나지 않아, 돈 기운이 오는 날을 골라 움직이는 게 유리합니다.'],
+    ['🤝','도와주는 사람이 나타나는 날은 12일마다 두 번 돌아옵니다', (gwIn?'사주 안에도 이 기운이 있어 사람을 통해 돈이 들어오기 쉽습니다. ':'')+'다음은 '+gwDays.map(fmtK).join(', ')+'입니다. 이날 사람 만나는 약속을 잡으면 좋습니다.'],
+    [me.strong?'💪':me.weak?'🍃':'⚖️','나는 '+(me.strong?'힘이 센 편':me.weak?'힘이 약한 편':'치우침 없는 편')+'입니다', me.weak?'돈이 와도 지키기 어려운 편입니다. 그래서 돈 기운이 오는 날은 점수를 낮추고, 내 힘을 보태 주는 날은 점수를 더 줍니다.':'돈 기운이 오는 날을 그대로 믿고 움직여도 됩니다.'],
+  ].map(([ic,t,p])=>`<div class="card"><div class="ic">${ic}</div><div><h3>${t}</h3><p>${p}</p></div></div>`).join('');
+}
+
+// ===== 화면 3 =====
+let lastDay=null;
+function renderDay(){
+  const me=ME; const x=scoreDay(me,selJ); lastDay=x; const c=fromJdn(x.J); const [gl,gc]=grade(x.score);
+  $('dayHero').innerHTML=`<div class="date">${c.y}년 ${fmtK(x.J)}${x.J===J_TODAY?' · 오늘':''}</div>
+    <div class="note">${ANIMAL[x.b]}의 날 <span style="opacity:.7">(${SK[x.s]}${BK[x.b]}일)</span></div>
+    <div class="score ${gc}">${x.score>0?'+':''}${x.score} <span style="font-size:1.2rem">${gl}</span></div>`;
+  const fixed=EL_DIR[me.jaeEl], jaesin=JAESIN[x.s], huisin=HUISIN[x.s];
+  drawCompass(fixed,jaesin,huisin,x);
+  $('legend').innerHTML=[
+    ['📍','방향은 집이나 사무실처럼 그날 출발하는 곳을 기준으로 봅니다',`휴대폰 나침반 앱을 켜고 아래 각도를 맞추면 됩니다. 북 0°, 동 90°, 남 180°, 서 270°.`],
+    ['🟡',`돈 일은 ${jaesin}쪽(${DEG[jaesin]})에 있는 곳에서 봅니다`,`출발하는 곳에서 ${jaesin}쪽에 있는 은행·거래처·계약 장소를 고릅니다. 그쪽에 없으면 집에서 ${jaesin}쪽을 보고 앉아 처리해도 됩니다.`],
+    ['🟠',`사람은 ${huisin}쪽(${DEG[huisin]})에서 만납니다`,`미팅·면접·소개 약속 장소를 출발하는 곳에서 ${huisin}쪽으로 잡습니다.`],
+    ['🟢',`나에게 늘 유리한 쪽은 ${fixed}${fixed==='중앙'?'':'('+DEG[fixed]+')'}입니다`,fixed==='중앙'?'방 한가운데나 건물 중심 자리가 나에게 맞습니다. 날짜와 상관없습니다.':`날짜와 상관없이 고정입니다. 책상이 ${fixed}쪽을 보게 두거나, 사무실·투자 지역을 고를 때 ${fixed}쪽을 고릅니다.`],
+    [jaesin===fixed?'⭐':'↔️',jaesin===fixed?'이날은 돈 일 보는 쪽과 늘 유리한 쪽이 같습니다':'이날 돈 일 보는 쪽과 늘 유리한 쪽이 다릅니다',jaesin===fixed?'한 방향만 챙기면 되는 가장 좋은 날입니다.':`이날 하루 일(은행·계약)은 ${jaesin}쪽, 오래 가는 선택(자리·지역)은 ${fixed}쪽을 따릅니다.`],
+  ].map(([ic,t,p])=>`<div class="card"><div class="ic">${ic}</div><div><h3>${t}</h3><p>${p}</p></div></div>`).join('');
+  $('todo').innerHTML=ADVICE[gl].map(([ic,p])=>`<div class="card"><div class="ic">${ic}</div><p>${p}</p></div>`).join('');
+  $('dayWhy').innerHTML=x.reasons.length?x.reasons.map(r=>`<div class="${r.w>0?'g':'b'}">${r.txt} <b>(${r.w>0?'+':''}${Math.round(r.w*10)/10})</b></div>`).join(''):'<div>이날은 내 사주와 특별히 맞물리는 것이 없는 평범한 날입니다.</div>';
+}
+function drawCompass(fixed,jaesin,huisin,x){
+  const cx=160,cy=160,R=130; const pt=(a,r)=>{const t=(a-90)*Math.PI/180;return [cx+r*Math.cos(t),cy+r*Math.sin(t)];};
+  let s=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="var(--panel2)" stroke="var(--line)" stroke-width="2"/><circle cx="${cx}" cy="${cy}" r="${R-36}" fill="none" stroke="var(--line)"/>`;
+  Object.keys(DIR_ANG).forEach(d=>{const a=DIR_ANG[d]; const isJ=d===jaesin, isF=d===fixed, isH=d===huisin;
+    if(isJ||isF){const [ax,ay]=pt(a-20,R-6),[bx,by]=pt(a+20,R-6); s+=`<path d="M${cx},${cy} L${ax},${ay} A${R-6},${R-6} 0 0 1 ${bx},${by} Z" fill="${isJ?'var(--gold)':'var(--good)'}" opacity="${isJ?.95:.55}"/>`;}
+    const [x1,y1]=pt(a,R-36),[x2,y2]=pt(a,R); s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--fg)" stroke-width="${a%90===0?2.5:1}" opacity=".8"/>`;
+    const [lx,ly]=pt(a,R-20); s+=`<text x="${lx}" y="${ly+6}" text-anchor="middle" font-size="${a%90===0?18:14}" font-weight="800" fill="${isJ?'var(--gold-ink)':'var(--fg)'}" font-family="var(--display)">${d}</text>`;
+    if(isH){const [hx,hy]=pt(a,R-56); s+=`<circle cx="${hx}" cy="${hy}" r="8" fill="var(--warn)"/>`;}
+  });
+  if(fixed==='중앙') s+=`<circle cx="${cx}" cy="${cy}" r="34" fill="var(--good)" opacity=".55"/>`;
+  s+=`<text x="${cx}" y="${cy-4}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)">돈 일 ${jaesin}</text><text x="${cx}" y="${cy+16}" text-anchor="middle" font-size="12" fill="var(--muted)">${fmt(x.J).slice(5)}</text>`;
+  $('compassSvg').innerHTML=s;
+}
+
+// ===== 이벤트 =====
+$('run').addEventListener('click',()=>{ if(!readInput()) return; weekOff=0; renderWeek(); show('week'); });
+$('toInput').addEventListener('click',()=>show('input'));
+$('toWeek').addEventListener('click',()=>{ weekOff=Math.floor((selJ-WEEK0)/7); renderWeek(); show('week'); });
+$('nextBest').addEventListener('click',e=>{ selJ=Number(e.currentTarget.dataset.j); renderDay(); show('day'); });
+$('wPrev').addEventListener('click',()=>{ if(weekOff>-1){weekOff--; renderWeek();} });
+$('wNext').addEventListener('click',()=>{ if(weekOff<12){weekOff++; renderWeek();} });
+$('wSel').addEventListener('change',e=>{ weekOff=Number(e.target.value); renderWeek(); });
+$('dPrev').addEventListener('click',()=>{ selJ--; renderDay(); window.scrollTo(0,0); });
+$('dNext').addEventListener('click',()=>{ selJ++; renderDay(); window.scrollTo(0,0); });
+$('copyBtn').addEventListener('click',()=>{ if(!lastDay) return; const x=lastDay; const [gl]=grade(x.score);
+  const txt=`${fromJdn(x.J).y}년 ${fmtK(x.J)} · ${gl}(${x.score>0?'+':''}${x.score})\n출발하는 곳에서 돈 일은 ${JAESIN[x.s]}쪽(${DEG[JAESIN[x.s]]}), 사람은 ${HUISIN[x.s]}쪽(${DEG[HUISIN[x.s]]})\n${ADVICE[gl][0][1]}`;
+  const btn=$('copyBtn'); const done=()=>{btn.textContent='복사했습니다'; setTimeout(()=>btn.textContent='이날 정보 복사하기',1500);};
+  try{ navigator.clipboard.writeText(txt).then(done).catch(()=>{btn.textContent=txt;}); }catch(e){ btn.textContent=txt; } });
+window.addEventListener('hashchange',()=>{ const h=location.hash.slice(1); if(!ME){show('input');return;} if(h==='day'&&selJ!=null){renderDay();show('day');} else if(h==='week'){renderWeek();show('week');} else show('input'); });
+(function init(){
+  try{const s=JSON.parse(localStorage.getItem('jaemul')||'null'); if(s){$('bdate').value=s.d;$('btime').value=s.t;$('bname').value=s.n||'';$('optSolar').checked=s.so;$('optYaja').checked=s.ya;}}catch(e){}
+  if(readInput()){ renderWeek(); show('week'); } else show('input');
+})();
+</script>
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;const b=document.getElementById('installBtn');if(b)b.hidden=false;});
+document.getElementById('installBtn').addEventListener('click',async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;document.getElementById('installBtn').hidden=true;});
+(function(){const ua=navigator.userAgent;const ios=/iPhone|iPad|iPod/.test(ua);const standalone=window.navigator.standalone===true||matchMedia('(display-mode: standalone)').matches;if(ios&&!standalone)document.getElementById('iosHint').hidden=false;})();
+</script>
+</body>
+</html>
