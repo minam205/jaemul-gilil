@@ -88,7 +88,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--gold);padding:6px 0}
 .why{display:grid;gap:8px}
 .why div{font-size:.98rem;padding:10px 12px;border-radius:10px;background:var(--panel2);border-left:5px solid var(--line)}
 .why div.g{border-left-color:var(--good)} .why div.b{border-left-color:var(--bad)}
-.compass svg{width:100%;max-width:340px;height:auto;display:block;margin:0 auto}
+.compass svg{width:100%;max-width:360px;height:auto;display:block;margin:0 auto}
 .card{background:var(--panel2);border-radius:12px;padding:14px;display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:start}
 .card .ic{font-size:1.8rem;line-height:1}
 .card p{font-size:.98rem}
@@ -154,7 +154,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--gold);padding:6px 0}
 <section class="view" id="v-day" hidden>
   <div class="bar"><button class="back" id="toWeek">‹ 주간 목록으로</button></div>
   <div class="hero" id="dayHero"></div>
-  <div class="panel"><h2>이날 어느 쪽으로 가면 좋은가</h2><div class="compass"><svg id="compassSvg" viewBox="0 0 320 320" role="img" aria-label="재물 방위 나침반"></svg></div><div class="grid" id="legend" style="margin-top:12px"></div></div>
+  <div class="panel"><h2>이날 어느 쪽으로 가면 좋은가</h2><div class="compass"><svg id="compassSvg" viewBox="0 0 340 340" role="img" aria-label="재물 방위 나침반"></svg></div><div class="grid" id="legend" style="margin-top:12px"></div></div>
   <div class="panel"><h2 id="whyTitle">이날 할 일과 피할 일</h2><div class="grid" id="todo"></div></div>
   <div class="panel"><h2>이날 재물운이 이렇게 나온 이유</h2><div class="why" id="dayWhy"></div></div>
   <button class="copy" id="copyBtn" style="margin-top:14px">이날 정보 복사하기</button>
@@ -179,6 +179,7 @@ const JAESIN={0:'동북',1:'동북',2:'서남',3:'서남',4:'북',5:'북',6:'동
 const HUISIN={0:'동북',5:'동북',1:'서북',6:'서북',2:'서남',7:'서남',3:'남',8:'남',4:'동남',9:'동남'};
 const EL_DIR=['동','남','중앙','서','북'];
 const DIR_ANG={'북':0,'동북':45,'동':90,'동남':135,'남':180,'서남':225,'서':270,'서북':315};
+const DIR_YUN={'북':'자(子)','동북':'간(艮)','동':'묘(卯)','동남':'손(巽)','남':'오(午)','서남':'곤(坤)','서':'유(酉)','서북':'건(乾)'};
 const WD='일월화수목금토';
 
 // ===== 천문 =====
@@ -304,9 +305,9 @@ function renderDay(){
   const fixed=EL_DIR[me.jaeEl], jaesin=JAESIN[x.s], huisin=HUISIN[x.s];
   drawCompass(fixed,jaesin,huisin,x);
   $('legend').innerHTML=[
-    ['📍','방향은 집이나 사무실처럼 그날 출발하는 곳을 기준으로 봅니다',`휴대폰 나침반 앱을 켜고 아래 각도를 맞추면 됩니다. 북 0°, 동 90°, 남 180°, 서 270°.`],
-    ['🟡',`돈 일은 ${jaesin}쪽(${DEG[jaesin]})에 있는 곳에서 봅니다`,`출발하는 곳에서 ${jaesin}쪽에 있는 은행·거래처·계약 장소를 고릅니다. 그쪽에 없으면 집에서 ${jaesin}쪽을 보고 앉아 처리해도 됩니다.`],
-    ['🟠',`사람은 ${huisin}쪽(${DEG[huisin]})에서 만납니다`,`미팅·면접·소개 약속 장소를 출발하는 곳에서 ${huisin}쪽으로 잡습니다.`],
+    ['📍','방향은 집이나 사무실처럼 그날 출발하는 곳을 기준으로 봅니다',`위 그림은 전통 나침반 윤도(輪圖)입니다. 금색으로 칠한 칸이 이날 돈 일 보는 쪽, 주황 점이 사람 만나는 쪽, 초록 테두리가 나에게 늘 유리한 쪽입니다. 휴대폰 나침반 앱을 켜고 각도를 맞추면 됩니다. 북 0°, 동 90°, 남 180°, 서 270°.`],
+    ['🟡',`돈 일은 ${jaesin}쪽(윤도 ${DIR_YUN[jaesin]}, ${DEG[jaesin]})에 있는 곳에서 봅니다`,`출발하는 곳에서 ${jaesin}쪽에 있는 은행·거래처·계약 장소를 고릅니다. 그쪽에 없으면 집에서 ${jaesin}쪽을 보고 앉아 처리해도 됩니다.`],
+    ['🟠',`사람은 ${huisin}쪽(윤도 ${DIR_YUN[huisin]}, ${DEG[huisin]})에서 만납니다`,`미팅·면접·소개 약속 장소를 출발하는 곳에서 ${huisin}쪽으로 잡습니다.`],
     ['🟢',`나에게 늘 유리한 쪽은 ${fixed}${fixed==='중앙'?'':'('+DEG[fixed]+')'}입니다`,fixed==='중앙'?'방 한가운데나 건물 중심 자리가 나에게 맞습니다. 날짜와 상관없습니다.':`날짜와 상관없이 고정입니다. 책상이 ${fixed}쪽을 보게 두거나, 사무실·투자 지역을 고를 때 ${fixed}쪽을 고릅니다.`],
     [jaesin===fixed?'⭐':'↔️',jaesin===fixed?'이날은 돈 일 보는 쪽과 늘 유리한 쪽이 같습니다':'이날 돈 일 보는 쪽과 늘 유리한 쪽이 다릅니다',jaesin===fixed?'한 방향만 챙기면 되는 가장 좋은 날입니다.':`이날 하루 일(은행·계약)은 ${jaesin}쪽, 오래 가는 선택(자리·지역)은 ${fixed}쪽을 따릅니다.`],
   ].map(([ic,t,p])=>`<div class="card"><div class="ic">${ic}</div><div><h3>${t}</h3><p>${p}</p></div></div>`).join('');
@@ -314,16 +315,47 @@ function renderDay(){
   $('dayWhy').innerHTML=x.reasons.length?x.reasons.map(r=>`<div class="${r.w>0?'g':'b'}">${r.txt} <b>(${r.w>0?'+':''}${Math.round(r.w*10)/10})</b></div>`).join(''):'<div>이날은 내 사주와 특별히 맞물리는 것이 없어 재물운이 평범합니다.</div>';
 }
 function drawCompass(fixed,jaesin,huisin,x){
-  const cx=160,cy=160,R=130; const pt=(a,r)=>{const t=(a-90)*Math.PI/180;return [cx+r*Math.cos(t),cy+r*Math.sin(t)];};
-  let s=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="var(--panel2)" stroke="var(--line)" stroke-width="2"/><circle cx="${cx}" cy="${cy}" r="${R-36}" fill="none" stroke="var(--line)"/>`;
-  Object.keys(DIR_ANG).forEach(d=>{const a=DIR_ANG[d]; const isJ=d===jaesin, isF=d===fixed, isH=d===huisin;
-    if(isJ||isF){const [ax,ay]=pt(a-20,R-6),[bx,by]=pt(a+20,R-6); s+=`<path d="M${cx},${cy} L${ax},${ay} A${R-6},${R-6} 0 0 1 ${bx},${by} Z" fill="${isJ?'var(--gold)':'var(--good)'}" opacity="${isJ?.95:.55}"/>`;}
-    const [x1,y1]=pt(a,R-36),[x2,y2]=pt(a,R); s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--fg)" stroke-width="${a%90===0?2.5:1}" opacity=".8"/>`;
-    const [lx,ly]=pt(a,R-20); s+=`<text x="${lx}" y="${ly+6}" text-anchor="middle" font-size="${a%90===0?18:14}" font-weight="800" fill="${isJ?'var(--gold-ink)':'var(--fg)'}" font-family="var(--display)">${d}</text>`;
-    if(isH){const [hx,hy]=pt(a,R-56); s+=`<circle cx="${hx}" cy="${hy}" r="8" fill="var(--warn)"/>`;}
-  });
-  if(fixed==='중앙') s+=`<circle cx="${cx}" cy="${cy}" r="34" fill="var(--good)" opacity=".55"/>`;
-  s+=`<text x="${cx}" y="${cy-4}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)">돈 일 ${jaesin}</text><text x="${cx}" y="${cy+16}" text-anchor="middle" font-size="12" fill="var(--muted)">${fmt(x.J).slice(5)}</text>`;
+  // 황금 윤도: 검은 옻칠 원판 위에 금색 동심원. 안쪽부터 팔괘 → 24방위 → 24절기 → 72분금 눈금.
+  const cx=170,cy=170; const pt=(a,r)=>{const t=(a-90)*Math.PI/180;return [cx+r*Math.cos(t),cy+r*Math.sin(t)];};
+  const sector=(a0,a1,r0,r1)=>{const [ax,ay]=pt(a0,r1),[bx,by]=pt(a1,r1),[cx1,cy1]=pt(a1,r0),[dx,dy]=pt(a0,r0);return `M${ax},${ay} A${r1},${r1} 0 0 1 ${bx},${by} L${cx1},${cy1} A${r0},${r0} 0 0 0 ${dx},${dy} Z`;};
+  const G='#f0c251', G2='#c9972e', INK='#0b0a08', LAC='#15120e', RED='#e0392f';
+  const D24=['자','계','축','간','인','갑','묘','을','진','손','사','병','오','정','미','곤','신','경','유','신','술','건','해','임'];
+  const JEOLGI=['동지','소한','대한','입춘','우수','경칩','춘분','청명','곡우','입하','소만','망종','하지','소서','대서','입추','처서','백로','추분','한로','상강','입동','소설','대설'];
+  const GUA=[[0,1,0],[1,0,0],[0,0,1],[0,1,1],[1,0,1],[0,0,0],[1,1,0],[1,1,1]]; // 감 간 진 손 리 곤 태 건 (후천팔괘, 북부터 시계방향) 1=양(한 줄) 0=음(끊긴 줄)
+  const R=166, rJeol=[126,150], r24=[88,124], rGua=[52,86], rWell=38;
+  let s=`<defs><radialGradient id="lac" cx="40%" cy="35%" r="80%"><stop offset="0" stop-color="#2a241c"/><stop offset="1" stop-color="${LAC}"/></radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0b8"/><stop offset=".5" stop-color="${G}"/><stop offset="1" stop-color="${G2}"/></linearGradient></defs>`;
+  s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#gold)"/><circle cx="${cx}" cy="${cy}" r="${R-5}" fill="url(#lac)" stroke="${G}" stroke-width="1"/>`;
+  // 72분금 눈금
+  for(let i=0;i<72;i++){const a=i*5; const [x1,y1]=pt(a,R-6),[x2,y2]=pt(a,i%3===0?R-14:R-10); s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${G}" stroke-width="${i%3===0?1.6:0.8}"/>`;}
+  // 강조 쐐기 (24방위 고리 + 절기 고리 걸쳐서)
+  const aJ=DIR_ANG[jaesin]; s+=`<path d="${sector(aJ-22.5,aJ+22.5,rGua[0],rJeol[1])}" fill="${G}" opacity=".95"/>`;
+  if(fixed!=='중앙'&&fixed!==jaesin){const aF=DIR_ANG[fixed]; s+=`<path d="${sector(aF-22.5,aF+22.5,rGua[0],rJeol[1])}" fill="none" stroke="#4fd1a8" stroke-width="3"/>`;}
+  if(fixed==='중앙') s+=`<circle cx="${cx}" cy="${cy}" r="${rGua[0]-2}" fill="none" stroke="#4fd1a8" stroke-width="3"/>`;
+  // 고리 선
+  [rJeol[1],rJeol[0],r24[0],rGua[0]].forEach(r=>s+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${G}" stroke-width="1.2"/>`);
+  // 24절기 고리
+  for(let i=0;i<24;i++){const a=i*15; const [x1,y1]=pt(a-7.5,rJeol[0]),[x2,y2]=pt(a-7.5,rJeol[1]); s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${G}" stroke-width=".7"/>`;
+    const inJ=Math.abs(((a-aJ)%360+540)%360-180)<=22.5; const [tx,ty]=pt(a,(rJeol[0]+rJeol[1])/2);
+    s+=`<text x="${tx}" y="${ty}" transform="rotate(${a>90&&a<270?a+180:a} ${tx} ${ty})" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="700" fill="${inJ?INK:G}" font-family="var(--display)">${JEOLGI[i]}</text>`;}
+  // 24방위 고리
+  for(let i=0;i<24;i++){const a=i*15; const [x1,y1]=pt(a-7.5,r24[0]),[x2,y2]=pt(a-7.5,r24[1]); s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${G}" stroke-width=".9"/>`;
+    const inJ=Math.abs(((a-aJ)%360+540)%360-180)<=22.5; const main=a%45===0; const [tx,ty]=pt(a,(r24[0]+r24[1])/2);
+    s+=`<text x="${tx}" y="${ty}" transform="rotate(${a>90&&a<270?a+180:a} ${tx} ${ty})" text-anchor="middle" dominant-baseline="central" font-size="${main?17:12}" font-weight="800" fill="${inJ?INK:(main?'#fff0b8':G)}" font-family="var(--display)">${D24[i]}</text>`;}
+  // 팔괘 고리 (3줄 막대)
+  for(let i=0;i<8;i++){const a=i*45; const inJ=a===aJ; const col=inJ?INK:G; const [gx,gy]=pt(a,(rGua[0]+rGua[1])/2);
+    GUA[i].forEach((yang,k)=>{const off=(k-1)*6; const w=14,h=3; // k=0 바깥(위), k=2 안쪽
+      if(yang) s+=`<rect x="${-w/2}" y="${off-h/2}" width="${w}" height="${h}" fill="${col}" transform="translate(${gx} ${gy}) rotate(${a})"/>`;
+      else { s+=`<rect x="${-w/2}" y="${off-h/2}" width="${w/2-1.5}" height="${h}" fill="${col}" transform="translate(${gx} ${gy}) rotate(${a})"/><rect x="${1.5}" y="${off-h/2}" width="${w/2-1.5}" height="${h}" fill="${col}" transform="translate(${gx} ${gy}) rotate(${a})"/>`; }});
+    const [x1,y1]=pt(a-22.5,rGua[0]),[x2,y2]=pt(a-22.5,rGua[1]); s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${G}" stroke-width=".7"/>`;}
+  // 희신방 표시(주황 점, 절기 고리 바깥)
+  {const aH=DIR_ANG[huisin]; const [hx,hy]=pt(aH,R-10); s+=`<circle cx="${hx}" cy="${hy}" r="6" fill="#ffb454" stroke="${INK}" stroke-width="1"/>`;}
+  // 중앙 우물과 자침
+  s+=`<circle cx="${cx}" cy="${cy}" r="${rWell}" fill="${INK}" stroke="${G}" stroke-width="2"/>`;
+  {const [nx,ny]=pt(0,rWell-6),[sx,sy]=pt(180,rWell-6); s+=`<line x1="${nx}" y1="${ny}" x2="${sx}" y2="${sy}" stroke="${RED}" stroke-width="1"/>`;}
+  {const [tx,ty]=pt(aJ,rWell-7),[bx,by]=pt(aJ+180,rWell-12),[lx,ly]=pt(aJ+90,4),[rx,ry]=pt(aJ-90,4);
+    s+=`<polygon points="${tx},${ty} ${lx},${ly} ${bx},${by} ${rx},${ry}" fill="url(#gold)"/><polygon points="${tx},${ty} ${lx},${ly} ${cx},${cy} ${rx},${ry}" fill="${RED}" opacity=".9"/>`;}
+  s+=`<circle cx="${cx}" cy="${cy}" r="3.5" fill="${INK}" stroke="${G}" stroke-width="1.2"/>`;
   $('compassSvg').innerHTML=s;
 }
 
