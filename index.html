@@ -154,7 +154,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--gold);padding:6px 0}
 <section class="view" id="v-day" hidden>
   <div class="bar"><button class="back" id="toWeek">‹ 주간 목록으로</button></div>
   <div class="hero" id="dayHero"></div>
-  <div class="panel"><h2>이날 어느 쪽으로 가면 좋은가</h2><div class="compass"><svg id="compassSvg" viewBox="0 0 340 340" role="img" aria-label="재물 방위 나침반"></svg></div><div class="grid" id="legend" style="margin-top:12px"></div></div>
+  <div class="panel"><h2>이날 어느 쪽으로 가면 좋은가</h2><div class="compass"><svg id="compassSvg" viewBox="0 0 345 345" role="img" aria-label="재물 방위 나침반"></svg></div><div class="grid" id="legend" style="margin-top:12px"></div></div>
   <div class="panel"><h2 id="whyTitle">이날 할 일과 피할 일</h2><div class="grid" id="todo"></div></div>
   <div class="panel"><h2>이날 재물운이 이렇게 나온 이유</h2><div class="why" id="dayWhy"></div></div>
   <button class="copy" id="copyBtn" style="margin-top:14px">이날 정보 복사하기</button>
@@ -315,47 +315,62 @@ function renderDay(){
   $('dayWhy').innerHTML=x.reasons.length?x.reasons.map(r=>`<div class="${r.w>0?'g':'b'}">${r.txt} <b>(${r.w>0?'+':''}${Math.round(r.w*10)/10})</b></div>`).join(''):'<div>이날은 내 사주와 특별히 맞물리는 것이 없어 재물운이 평범합니다.</div>';
 }
 function drawCompass(fixed,jaesin,huisin,x){
-  // 황금 윤도: 검은 옻칠 원판 위에 금색 동심원. 안쪽부터 팔괘 → 24방위 → 24절기 → 72분금 눈금.
+  // 황금 윤도: 검은 옻칠 원판 위에 금속 광택의 금 테·금 고리·돋을새김 글자. 안쪽부터 팔괘 → 24방위 → 24절기 → 72분금.
   const cx=170,cy=170; const pt=(a,r)=>{const t=(a-90)*Math.PI/180;return [cx+r*Math.cos(t),cy+r*Math.sin(t)];};
   const sector=(a0,a1,r0,r1)=>{const [ax,ay]=pt(a0,r1),[bx,by]=pt(a1,r1),[cx1,cy1]=pt(a1,r0),[dx,dy]=pt(a0,r0);return `M${ax},${ay} A${r1},${r1} 0 0 1 ${bx},${by} L${cx1},${cy1} A${r0},${r0} 0 0 0 ${dx},${dy} Z`;};
-  const G='#f0c251', G2='#c9972e', INK='#0b0a08', LAC='#15120e', RED='#e0392f';
+  const INK='#120d05', RED='#e0392f';
   const D24=['자','계','축','간','인','갑','묘','을','진','손','사','병','오','정','미','곤','신','경','유','신','술','건','해','임'];
   const JEOLGI=['동지','소한','대한','입춘','우수','경칩','춘분','청명','곡우','입하','소만','망종','하지','소서','대서','입추','처서','백로','추분','한로','상강','입동','소설','대설'];
-  const GUA=[[0,1,0],[1,0,0],[0,0,1],[0,1,1],[1,0,1],[0,0,0],[1,1,0],[1,1,1]]; // 감 간 진 손 리 곤 태 건 (후천팔괘, 북부터 시계방향) 1=양(한 줄) 0=음(끊긴 줄)
-  const R=166, rJeol=[126,150], r24=[88,124], rGua=[52,86], rWell=38;
-  let s=`<defs><radialGradient id="lac" cx="40%" cy="35%" r="80%"><stop offset="0" stop-color="#2a241c"/><stop offset="1" stop-color="${LAC}"/></radialGradient>
-    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0b8"/><stop offset=".5" stop-color="${G}"/><stop offset="1" stop-color="${G2}"/></linearGradient></defs>`;
-  s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#gold)"/><circle cx="${cx}" cy="${cy}" r="${R-5}" fill="url(#lac)" stroke="${G}" stroke-width="1"/>`;
-  // 72분금 눈금
-  for(let i=0;i<72;i++){const a=i*5; const [x1,y1]=pt(a,R-6),[x2,y2]=pt(a,i%3===0?R-14:R-10); s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${G}" stroke-width="${i%3===0?1.6:0.8}"/>`;}
-  // 강조 쐐기 (24방위 고리 + 절기 고리 걸쳐서)
-  const aJ=DIR_ANG[jaesin]; s+=`<path d="${sector(aJ-22.5,aJ+22.5,rGua[0],rJeol[1])}" fill="${G}" opacity=".95"/>`;
-  if(fixed!=='중앙'&&fixed!==jaesin){const aF=DIR_ANG[fixed]; s+=`<path d="${sector(aF-22.5,aF+22.5,rGua[0],rJeol[1])}" fill="none" stroke="#4fd1a8" stroke-width="3"/>`;}
+  const GUA=[[0,1,0],[1,0,0],[0,0,1],[0,1,1],[1,0,1],[0,0,0],[1,1,0],[1,1,1]];
+  const R=168, rJeol=[126,150], r24=[88,124], rGua=[52,86], rWell=38;
+  const gold='url(#gm)', goldT='url(#gt)';
+  let s=`<defs>
+    <linearGradient id="gm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff6c8"/><stop offset=".18" stop-color="#f4d06a"/><stop offset=".42" stop-color="#b8841c"/><stop offset=".55" stop-color="#f7d873"/><stop offset=".75" stop-color="#a86f12"/><stop offset="1" stop-color="#fbe9a6"/></linearGradient>
+    <linearGradient id="gt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3c0"/><stop offset=".5" stop-color="#f0c251"/><stop offset="1" stop-color="#b07a14"/></linearGradient>
+    <radialGradient id="lac" cx="38%" cy="32%" r="85%"><stop offset="0" stop-color="#3a2f1e"/><stop offset=".45" stop-color="#1a140c"/><stop offset="1" stop-color="#070503"/></radialGradient>
+    <radialGradient id="well" cx="40%" cy="35%" r="80%"><stop offset="0" stop-color="#241b0e"/><stop offset="1" stop-color="#050302"/></radialGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <filter id="emb" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1" stdDeviation=".5" flood-color="#000" flood-opacity=".9"/><feDropShadow dx="0" dy="-.5" stdDeviation=".3" flood-color="#fff8d0" flood-opacity=".5"/></filter>
+    <filter id="ring" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="1.2" stdDeviation=".8" flood-color="#000" flood-opacity=".8"/></filter>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>`;
+  // 금 테(두꺼운 금속 띠) + 옻칠 원판
+  s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="#000" opacity=".6" transform="translate(0 3)"/>`;
+  s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="${gold}"/><circle cx="${cx}" cy="${cy}" r="${R-3}" fill="none" stroke="#fff6c8" stroke-width=".8" opacity=".7"/><circle cx="${cx}" cy="${cy}" r="${R-11}" fill="none" stroke="#5a3d08" stroke-width="1"/>`;
+  s+=`<circle cx="${cx}" cy="${cy}" r="${R-12}" fill="url(#lac)"/>`;
+  // 72분금 눈금(금 테 위에 새김)
+  for(let i=0;i<72;i++){const a=i*5; const [x1,y1]=pt(a,R-1.5),[x2,y2]=pt(a,i%3===0?R-9.5:R-6); s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#4a3006" stroke-width="${i%3===0?1.4:0.8}"/>`;}
+  // 강조 쐐기: 광택 금
+  const aJ=DIR_ANG[jaesin]; s+=`<path d="${sector(aJ-22.5,aJ+22.5,rGua[0],rJeol[1])}" fill="${gold}" filter="url(#glow)"/><path d="${sector(aJ-22.5,aJ+22.5,rGua[0],rJeol[1])}" fill="url(#sheen)"/>`;
+  if(fixed!=='중앙'&&fixed!==jaesin){const aF=DIR_ANG[fixed]; s+=`<path d="${sector(aF-22.5,aF+22.5,rGua[0],rJeol[1])}" fill="none" stroke="#4fd1a8" stroke-width="3" filter="url(#ring)"/>`;}
   if(fixed==='중앙') s+=`<circle cx="${cx}" cy="${cy}" r="${rGua[0]-2}" fill="none" stroke="#4fd1a8" stroke-width="3"/>`;
-  // 고리 선
-  [rJeol[1],rJeol[0],r24[0],rGua[0]].forEach(r=>s+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${G}" stroke-width="1.2"/>`);
+  // 고리 선(금속)
+  [rJeol[1],rJeol[0],r24[0],rGua[0]].forEach(r=>s+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${gold}" stroke-width="2" filter="url(#ring)"/>`);
+  const inWedge=a=>Math.abs(((a-aJ)%360+540)%360-180)<=22.5;
   // 24절기 고리
-  for(let i=0;i<24;i++){const a=i*15; const [x1,y1]=pt(a-7.5,rJeol[0]),[x2,y2]=pt(a-7.5,rJeol[1]); s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${G}" stroke-width=".7"/>`;
-    const inJ=Math.abs(((a-aJ)%360+540)%360-180)<=22.5; const [tx,ty]=pt(a,(rJeol[0]+rJeol[1])/2);
-    s+=`<text x="${tx}" y="${ty}" transform="rotate(${a>90&&a<270?a+180:a} ${tx} ${ty})" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="700" fill="${inJ?INK:G}" font-family="var(--display)">${JEOLGI[i]}</text>`;}
+  for(let i=0;i<24;i++){const a=i*15; const [x1,y1]=pt(a-7.5,rJeol[0]),[x2,y2]=pt(a-7.5,rJeol[1]); s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${gold}" stroke-width=".8" opacity=".9"/>`;
+    const [tx,ty]=pt(a,(rJeol[0]+rJeol[1])/2); const rot=a>90&&a<270?a+180:a;
+    s+=`<text x="${tx}" y="${ty}" transform="rotate(${rot} ${tx} ${ty})" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="700" fill="${inWedge(a)?INK:goldT}" filter="${inWedge(a)?'':'url(#emb)'}" font-family="var(--display)">${JEOLGI[i]}</text>`;}
   // 24방위 고리
-  for(let i=0;i<24;i++){const a=i*15; const [x1,y1]=pt(a-7.5,r24[0]),[x2,y2]=pt(a-7.5,r24[1]); s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${G}" stroke-width=".9"/>`;
-    const inJ=Math.abs(((a-aJ)%360+540)%360-180)<=22.5; const main=a%45===0; const [tx,ty]=pt(a,(r24[0]+r24[1])/2);
-    s+=`<text x="${tx}" y="${ty}" transform="rotate(${a>90&&a<270?a+180:a} ${tx} ${ty})" text-anchor="middle" dominant-baseline="central" font-size="${main?17:12}" font-weight="800" fill="${inJ?INK:(main?'#fff0b8':G)}" font-family="var(--display)">${D24[i]}</text>`;}
-  // 팔괘 고리 (3줄 막대)
-  for(let i=0;i<8;i++){const a=i*45; const inJ=a===aJ; const col=inJ?INK:G; const [gx,gy]=pt(a,(rGua[0]+rGua[1])/2);
-    GUA[i].forEach((yang,k)=>{const off=(k-1)*6; const w=14,h=3; // k=0 바깥(위), k=2 안쪽
-      if(yang) s+=`<rect x="${-w/2}" y="${off-h/2}" width="${w}" height="${h}" fill="${col}" transform="translate(${gx} ${gy}) rotate(${a})"/>`;
-      else { s+=`<rect x="${-w/2}" y="${off-h/2}" width="${w/2-1.5}" height="${h}" fill="${col}" transform="translate(${gx} ${gy}) rotate(${a})"/><rect x="${1.5}" y="${off-h/2}" width="${w/2-1.5}" height="${h}" fill="${col}" transform="translate(${gx} ${gy}) rotate(${a})"/>`; }});
-    const [x1,y1]=pt(a-22.5,rGua[0]),[x2,y2]=pt(a-22.5,rGua[1]); s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${G}" stroke-width=".7"/>`;}
-  // 희신방 표시(주황 점, 절기 고리 바깥)
-  {const aH=DIR_ANG[huisin]; const [hx,hy]=pt(aH,R-10); s+=`<circle cx="${hx}" cy="${hy}" r="6" fill="#ffb454" stroke="${INK}" stroke-width="1"/>`;}
+  for(let i=0;i<24;i++){const a=i*15; const [x1,y1]=pt(a-7.5,r24[0]),[x2,y2]=pt(a-7.5,r24[1]); s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${gold}" stroke-width="1"/>`;
+    const main=a%45===0; const [tx,ty]=pt(a,(r24[0]+r24[1])/2); const rot=a>90&&a<270?a+180:a;
+    s+=`<text x="${tx}" y="${ty}" transform="rotate(${rot} ${tx} ${ty})" text-anchor="middle" dominant-baseline="central" font-size="${main?17:12}" font-weight="800" fill="${inWedge(a)?INK:goldT}" filter="${inWedge(a)?'':'url(#emb)'}" font-family="var(--display)">${D24[i]}</text>`;}
+  // 팔괘 고리
+  for(let i=0;i<8;i++){const a=i*45; const col=inWedge(a)&&a===aJ?INK:goldT; const [gx,gy]=pt(a,(rGua[0]+rGua[1])/2); const f=a===aJ?'':'filter="url(#emb)"';
+    GUA[i].forEach((yang,k)=>{const off=(k-1)*6; const w=14,h=3;
+      if(yang) s+=`<rect x="${-w/2}" y="${off-h/2}" width="${w}" height="${h}" rx=".8" fill="${col}" ${f} transform="translate(${gx} ${gy}) rotate(${a})"/>`;
+      else s+=`<rect x="${-w/2}" y="${off-h/2}" width="${w/2-1.5}" height="${h}" rx=".8" fill="${col}" ${f} transform="translate(${gx} ${gy}) rotate(${a})"/><rect x="1.5" y="${off-h/2}" width="${w/2-1.5}" height="${h}" rx=".8" fill="${col}" ${f} transform="translate(${gx} ${gy}) rotate(${a})"/>`;});
+    const [x1,y1]=pt(a-22.5,rGua[0]),[x2,y2]=pt(a-22.5,rGua[1]); s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${gold}" stroke-width=".8"/>`;}
+  // 희신방 표시(주황 구슬, 금 테 위)
+  {const aH=DIR_ANG[huisin]; const [hx,hy]=pt(aH,R-5.5); s+=`<circle cx="${hx}" cy="${hy}" r="6" fill="#ffb454" stroke="#7a3d00" stroke-width="1" filter="url(#ring)"/><circle cx="${hx-1.5}" cy="${hy-1.5}" r="2" fill="#fff" opacity=".7"/>`;}
   // 중앙 우물과 자침
-  s+=`<circle cx="${cx}" cy="${cy}" r="${rWell}" fill="${INK}" stroke="${G}" stroke-width="2"/>`;
+  s+=`<circle cx="${cx}" cy="${cy}" r="${rWell+3}" fill="${gold}" filter="url(#ring)"/><circle cx="${cx}" cy="${cy}" r="${rWell}" fill="url(#well)"/>`;
   {const [nx,ny]=pt(0,rWell-6),[sx,sy]=pt(180,rWell-6); s+=`<line x1="${nx}" y1="${ny}" x2="${sx}" y2="${sy}" stroke="${RED}" stroke-width="1"/>`;}
   {const [tx,ty]=pt(aJ,rWell-7),[bx,by]=pt(aJ+180,rWell-12),[lx,ly]=pt(aJ+90,4),[rx,ry]=pt(aJ-90,4);
-    s+=`<polygon points="${tx},${ty} ${lx},${ly} ${bx},${by} ${rx},${ry}" fill="url(#gold)"/><polygon points="${tx},${ty} ${lx},${ly} ${cx},${cy} ${rx},${ry}" fill="${RED}" opacity=".9"/>`;}
-  s+=`<circle cx="${cx}" cy="${cy}" r="3.5" fill="${INK}" stroke="${G}" stroke-width="1.2"/>`;
+    s+=`<polygon points="${tx},${ty} ${lx},${ly} ${bx},${by} ${rx},${ry}" fill="${gold}" filter="url(#ring)"/><polygon points="${tx},${ty} ${lx},${ly} ${cx},${cy} ${rx},${ry}" fill="${RED}" opacity=".92"/>`;}
+  s+=`<circle cx="${cx}" cy="${cy}" r="4" fill="${gold}" stroke="#3a2504" stroke-width="1"/>`;
+  // 전체 광택: 왼쪽 위에서 비치는 빛
+  s+=`<ellipse cx="${cx-50}" cy="${cy-70}" rx="120" ry="60" fill="url(#sheen)" transform="rotate(-35 ${cx-50} ${cy-70})" pointer-events="none"/>`;
   $('compassSvg').innerHTML=s;
 }
 
