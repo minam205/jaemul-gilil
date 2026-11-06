@@ -108,13 +108,13 @@ details summary{cursor:pointer;font-weight:700;color:var(--gold);padding:6px 0}
 
 <!-- 화면 1: 태어난 때 입력 -->
 <section class="view" id="v-input">
-  <div class="bar"><h1>재물 길일 나침반</h1><p class="sub">태어난 때를 넣으면 내 사주로 이번 주 재물운을 날마다 보여 드리고, 재물운이 강한 날 어느 쪽으로 가면 좋은지 알려 드립니다. 입력은 이 기기에만 저장됩니다.</p></div>
+  <div class="bar"><h1>재물 길일 나침반</h1><p class="sub">태어난 때를 넣으면 내 사주로 이번 회차 로또를 어느 요일에, 어느 쪽 판매점에서 사면 좋은지 알려 드립니다. 입력은 이 기기에만 저장됩니다.</p></div>
   <div class="panel grid">
     <label>생년월일(양력)<input type="date" id="bdate" value="1979-11-18"></label>
     <label>태어난 시각<input type="time" id="btime" value="23:55"></label>
     <label>이름(표시용, 안 써도 됨)<input type="text" id="bname" value="" placeholder="예: 홍길동"></label>
     <label class="chk"><input type="checkbox" id="optYaja" checked>밤 11시 이후에 태어났으면 그날을 생일로 계산합니다(사주에서는 밤 11시부터 다음 날로 치기도 합니다)</label>
-    <button id="run">이번 주 재물운 보기</button>
+    <button id="run">이번 회차 로또 날 보기</button>
     <details><summary>자세한 설정</summary>
       <div class="grid" style="margin-top:8px">
         <label class="chk"><input type="checkbox" id="optSolar" checked>서울의 실제 해 시각에 맞춰 30분 당겨 계산합니다(권장)</label>
@@ -127,7 +127,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--gold);padding:6px 0}
 <!-- 화면 2: 주간 리스트 -->
 <section class="view" id="v-week" hidden>
   <div class="bar">
-    <h1 id="weekTitle">이번 주 재물운</h1>
+    <h1 id="weekTitle">이번 회차 로또, 어느 날 살까</h1>
     <div class="nav">
       <button class="iconbtn" id="wPrev" aria-label="지난주">‹</button>
       <select id="wSel" aria-label="주 선택"></select>
@@ -142,12 +142,12 @@ details summary{cursor:pointer;font-weight:700;color:var(--gold);padding:6px 0}
   <div class="week" id="weekList"></div>
   <button id="installBtn" class="copy" style="margin-top:12px" hidden>📲 홈 화면에 앱으로 설치하기</button>
   <p class="note" id="iosHint" style="margin-top:10px" hidden>아이폰: 공유 버튼 → "홈 화면에 추가"를 누르면 앱처럼 쓸 수 있습니다.</p>
-  <p class="note" style="margin-top:10px">날짜를 누르면 그날 재물운의 이유, 할 일과 피할 일, 어느 쪽으로 가면 좋은지가 나옵니다.</p>
+  <p class="note" style="margin-top:10px">날짜를 누르면 그날 횡재 기운의 이유와 어느 쪽 판매점으로 갈지가 나옵니다.</p>
   <details class="panel"><summary>내 사주 자세히 보기</summary><p class="note" style="margin:6px 0 0">아래 한자는 읽을 줄 몰라도 됩니다. 그 밑의 설명만 보면 됩니다.</p>
     <div class="pillars" id="pillars"></div>
     <div class="grid" id="diag" style="margin-top:12px"></div>
   </details>
-  <p class="foot">재물운은 동양 명리학의 전통 해석이며 결과를 보장하지 않습니다. 돈이 걸린 결정은 계약 조건과 숫자로 판단하고, 이 앱은 날짜와 방향을 고를 때 참고로만 쓰세요.</p>
+  <p class="foot">사주 길일은 당첨 확률을 바꾸지 않습니다. 이 앱은 기분 좋게 사는 날과 방향을 고르는 재미로만 쓰세요. 로또는 회차당 한 장(5천 원)이면 충분하고, 과하게 느껴지면 한국도박문제예방치유원 1336으로 상담할 수 있습니다.</p>
 </section>
 
 <!-- 화면 3: 날짜 상세 -->
@@ -156,7 +156,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--gold);padding:6px 0}
   <div class="hero" id="dayHero"></div>
   <div class="panel"><h2>이날 어느 쪽으로 가면 좋은가</h2><div class="compass"><svg id="compassSvg" viewBox="0 0 345 345" role="img" aria-label="재물 방위 나침반"></svg></div><div class="grid" id="legend" style="margin-top:12px"></div></div>
   <div class="panel"><h2 id="whyTitle">이날 할 일과 피할 일</h2><div class="grid" id="todo"></div></div>
-  <div class="panel"><h2>이날 재물운이 이렇게 나온 이유</h2><div class="why" id="dayWhy"></div></div>
+  <div class="panel"><h2>이날 로또 운이 이렇게 나온 이유</h2><div class="why" id="dayWhy"></div></div>
   <button class="copy" id="copyBtn" style="margin-top:14px">이날 정보 복사하기</button>
   <div class="pn"><button id="dPrev">‹ 전날</button><button id="dNext">다음날 ›</button></div>
 </section>
@@ -215,8 +215,10 @@ function relOf(me,st){return (STEM_EL[st]-STEM_EL[me]+5)%5;}
 function scoreDay(me,J){
   const di=dayIdx(J), s=di%10, b=di%12; const reasons=[]; let sc=0; const mul=me.weak?0.6:1;
   const add=(txt,w)=>{reasons.push({txt,w}); sc+=w;};
-  if(STEM_EL[s]===me.jaeEl) add(`이날은 내가 다스리는 돈 기운이 겉으로 드러난 날입니다. 돈이 들어오기 좋습니다.`,3*mul);
-  if(STEM_EL[BR_MAIN[b]]===me.jaeEl) add(`이날은 바탕에도 돈 기운이 깔려 있어 두 겹입니다.`,3*mul);
+  const pyeon=st=>(st%2)===(me.day.s%2); // 음양이 같으면 편재(횡재), 다르면 정재(월급)
+  if(STEM_EL[s]===me.jaeEl) add(pyeon(s)?`이날은 한꺼번에 들어오는 돈(횡재) 기운이 겉으로 드러난 날입니다. 로또에 가장 맞는 기운입니다.`:`이날은 꾸준히 들어오는 돈(월급) 기운이 드러난 날입니다. 로또보다는 일로 버는 날입니다.`,(pyeon(s)?4:1.5)*mul);
+  if(STEM_EL[BR_MAIN[b]]===me.jaeEl) add(pyeon(BR_MAIN[b])?`이날은 바탕에도 횡재 기운이 깔려 있어 두 겹입니다.`:`이날은 바탕에 월급 기운이 깔려 있습니다.`,(pyeon(BR_MAIN[b])?4:1.5)*mul);
+  {const YM={2:8,6:8,10:8, 8:2,0:2,4:2, 5:11,9:11,1:11, 11:5,3:5,7:5}; if(YM[me.day.b]===b) add(`이날은 움직이면 운이 생기는 날(역마)입니다. 직접 나가서 사는 게 맞습니다.`,1.5);}
   if(GWIIN[me.day.s].includes(b)) add(`나를 도와주는 사람이 나타나는 날입니다.`,2);
   if((s+5)%10===me.day.s) add(`이날 기운이 나와 손을 잡는 짝이라 거래 상대와 뜻이 맞습니다.`,2);
   if(YUKHAP[b]===me.day.b) add(`이날은 내 생일과 짝을 이루는 날이라 일이 순조롭습니다.`,2);
@@ -229,20 +231,21 @@ function scoreDay(me,J){
   return {J,s,b,score:Math.round(sc*10)/10,reasons};
 }
 const grade=sc=>sc>=4?['매우 좋음','g']:sc>=2?['좋음','g']:sc>-2?['보통','n']:['나쁨','b'];
-const ONE={'매우 좋음':'재물운이 가장 강한 날. 계약·입금·투자 결정을 잡습니다','좋음':'재물운이 받쳐 주는 날. 돈 일을 보기에 무난합니다','보통':'재물운이 평범한 날. 하던 일을 마무리합니다','나쁨':'재물운이 막히는 날. 계약·송금·투자 결정을 미룹니다'};
+const ONE={'매우 좋음':'횡재 기운이 가장 강한 날. 로또는 이날 삽니다','좋음':'횡재 기운이 받쳐 주는 날. 사도 괜찮습니다','보통':'횡재 기운이 평범한 날. 더 좋은 날이 있으면 기다립니다','나쁨':'횡재 기운이 막히는 날. 이날은 사지 않습니다'};
 const DEG={'북':'0°','동북':'45°','동':'90°','동남':'135°','남':'180°','서남':'225°','서':'270°','서북':'315°'};
 const ADVICE={
-  '매우 좋음':[['✅','계약서 서명, 큰 금액 입금·출금, 투자 결정, 영업 미팅을 이날로 잡습니다.'],['🧭','은행·계약 장소는 위 나침반의 금색 쪽, 사람 만날 장소는 주황 점 쪽으로 잡습니다.']],
-  '좋음':[['✅','돈 일을 보기에 무난합니다. 급하지 않은 큰 결정은 더 좋은 날이 있으면 그날로 미룹니다.'],['🧭','위 나침반 방향을 맞출 수 있으면 맞추고, 못 맞춰도 무리하지 않습니다.']],
-  '보통':[['➖','평소대로 진행합니다. 새로 벌이기보다 하던 일을 마무리합니다.'],['🧭','위 나침반 방향은 참고만 합니다.']],
-  '나쁨':[['⛔','계약·송금·투자 결정·돈 빌려주기는 다른 날로 미룹니다.'],['🛡️','이날은 지키는 날입니다. 지출 점검, 서류 정리, 미수금 확인에 씁니다.']],
+  '매우 좋음':[['🎫','이번 회차 로또는 이날 삽니다. 한 장(5천 원)이면 충분합니다.'],['🧭','판매점은 지금 있는 곳에서 위 나침반의 금색 쪽에 있는 곳으로 갑니다.']],
+  '좋음':[['🎫','사도 괜찮은 날입니다. 이번 회차에 더 좋은 날이 있으면 그날로 미룹니다.'],['🧭','금색 쪽 판매점을 고를 수 있으면 고르고, 못 고르면 가까운 곳에서 삽니다.']],
+  '보통':[['➖','이날은 사지 않고 기다립니다. 이번 회차에 좋은 날이 없으면 토요일 전 아무 날이나 한 장만.'],['🧭','위 나침반 방향은 참고만 합니다.']],
+  '나쁨':[['⛔','이날은 사지 않습니다. 횡재 기운이 막혀 헛돈 쓰기 쉬운 날입니다.'],['🛡️','지난 회차 당첨 확인, 번호 정리처럼 돈 안 드는 일만 합니다.']],
 };
 
 // ===== 상태 =====
 const $=id=>document.getElementById(id);
 let ME=null, WEEK0=0, weekOff=0, selJ=null;
 const now=new Date(); const J_TODAY=jdn(now.getFullYear(),now.getMonth()+1,now.getDate());
-WEEK0=J_TODAY-((J_TODAY+1)%7+6)%7;
+WEEK0=J_TODAY-((J_TODAY+1)%7); // 이번 회차 일요일
+const LOTTO1=jdn(2002,12,7); const roundOf=sun=>Math.floor((sun+6-LOTTO1)/7)+1; // 토요일 추첨 기준 회차
 const fmt=J=>{const c=fromJdn(J);return `${c.y}.${String(c.m).padStart(2,'0')}.${String(c.d).padStart(2,'0')}`;};
 const fmtK=J=>{const c=fromJdn(J);return `${c.m}월 ${c.d}일 ${WD[(J+1)%7]}요일`;};
 function readInput(){
@@ -263,21 +266,21 @@ function renderWeek(){
   $('meLine').textContent=`${name?name+' 님은 ':''}${base}입니다.`;
   $('meSub').textContent=`돈 일은 ${EL_DIR[me.jaeEl]}쪽에서 보면 늘 유리하고, 도와주는 사람은 ${gwDays.map(fmtK).join('과 ')}에 나타납니다.`;
   const sel=$('wSel'); sel.innerHTML='';
-  for(let i=-1;i<=12;i++){const a=WEEK0+i*7,b=a+6; const lab=(i===-1?'지난주':i===0?'이번주':i===1?'다음주':`${i}주 뒤`)+` · ${fmt(a).slice(5)}~${fmt(b).slice(5)}`;
+  for(let i=-1;i<=12;i++){const a=WEEK0+i*7,b=a+6; const lab=`${roundOf(a)}회 · ${fmt(a).slice(5)}(일)~${fmt(b).slice(5)}(토)`+(i===0?' · 이번 회차':i===1?' · 다음 회차':'');
     const o=document.createElement('option'); o.value=i; o.textContent=lab; sel.appendChild(o);}
   sel.value=weekOff;
   const a=WEEK0+weekOff*7;
-  $('weekTitle').textContent=(weekOff===0?'이번 주':weekOff===1?'다음 주':weekOff===-1?'지난주':`${weekOff}주 뒤`)+' 재물운';
+  $('weekTitle').textContent=`${roundOf(a)}회 로또, 어느 날 살까`;
   // 가장 가까운 최상·좋음 날
   let nb=null; for(let i=0;i<60&&!nb;i++){const x=scoreDay(me,J_TODAY+i); if(x.score>=4) nb=x;}
   if(!nb) for(let i=0;i<60&&!nb;i++){const x=scoreDay(me,J_TODAY+i); if(x.score>=2) nb=x;}
-  if(nb){const dd=nb.J-J_TODAY; $('nextBest').innerHTML=`<div class="ic">⭐</div><div><b>${dd===0?'오늘':dd===1?'내일':dd+'일 뒤'} ${fmtK(nb.J)}</b><small>앞으로 재물운이 가장 좋은 날입니다. ${ONE[grade(nb.score)[0]]}. 누르면 방향과 할 일이 나옵니다.</small></div>`; $('nextBest').dataset.j=nb.J; $('nextBest').hidden=false;} else $('nextBest').hidden=true;
+  if(nb){const dd=nb.J-J_TODAY; $('nextBest').innerHTML=`<div class="ic">⭐</div><div><b>${dd===0?'오늘':dd===1?'내일':dd+'일 뒤'} ${fmtK(nb.J)}</b><small>앞으로 로또 사기 가장 좋은 날입니다. ${ONE[grade(nb.score)[0]]}. 누르면 어느 쪽 판매점으로 갈지 나옵니다.</small></div>`; $('nextBest').dataset.j=nb.J; $('nextBest').hidden=false;} else $('nextBest').hidden=true;
   const days=[]; for(let i=0;i<7;i++) days.push(scoreDay(me,a+i));
   const best=Math.max(...days.map(x=>x.score));
   $('weekList').innerHTML=days.map(x=>{const c=fromJdn(x.J); const w=(x.J+1)%7; const [gl,gc]=grade(x.score);
     return `<button class="dayrow ${x.score===best&&best>=2?'best':''} ${x.J===J_TODAY?'today':''}" data-j="${x.J}">
       <div class="wd ${w===0?'sun':w===6?'sat':''}">${WD[w]}<small>${c.m}/${c.d}</small></div>
-      <div class="mid"><div class="gz">${x.J===J_TODAY?'오늘 · ':''}${ANIMAL[x.b]}의 날</div>
+      <div class="mid"><div class="gz">${x.J===J_TODAY?'오늘 · ':''}${ANIMAL[x.b]}의 날${w===6?' · 추첨일, 저녁 8시 판매 마감':''}</div>
       <div class="dirs">${ONE[gl]}</div></div>
       <div class="sc ${gc}">${x.score>0?'+':''}${x.score}<small>${gl} ›</small></div></button>`;}).join('');
   $('weekList').querySelectorAll('.dayrow').forEach(b=>b.addEventListener('click',()=>{selJ=Number(b.dataset.j); renderDay(); show('day');}));
@@ -301,15 +304,15 @@ function renderDay(){
   const me=ME; const x=scoreDay(me,selJ); lastDay=x; const c=fromJdn(x.J); const [gl,gc]=grade(x.score);
   $('dayHero').innerHTML=`<div class="date">${c.y}년 ${fmtK(x.J)}${x.J===J_TODAY?' · 오늘':''}</div>
     <div class="note">${ANIMAL[x.b]}의 날 <span style="opacity:.7">(${SK[x.s]}${BK[x.b]}일)</span></div>
-    <div class="score ${gc}">${x.score>0?'+':''}${x.score} <span style="font-size:1.2rem">재물운 ${gl}</span></div>`;
+    <div class="score ${gc}">${x.score>0?'+':''}${x.score} <span style="font-size:1.2rem">로또 운 ${gl}</span></div>`;
   const fixed=EL_DIR[me.jaeEl], jaesin=JAESIN[x.s], huisin=HUISIN[x.s];
   drawCompass(fixed,jaesin,huisin,x);
   $('legend').innerHTML=[
     ['📍','방향은 집이나 사무실처럼 그날 출발하는 곳을 기준으로 봅니다',`위 그림은 전통 나침반 윤도(輪圖)입니다. 금색으로 칠한 칸이 이날 돈 일 보는 쪽, 주황 점이 사람 만나는 쪽, 초록 테두리가 나에게 늘 유리한 쪽입니다. 휴대폰 나침반 앱을 켜고 각도를 맞추면 됩니다. 북 0°, 동 90°, 남 180°, 서 270°.`],
-    ['🟡',`돈 일은 ${jaesin}쪽(윤도 ${DIR_YUN[jaesin]}, ${DEG[jaesin]})에 있는 곳에서 봅니다`,`출발하는 곳에서 ${jaesin}쪽에 있는 은행·거래처·계약 장소를 고릅니다. 그쪽에 없으면 집에서 ${jaesin}쪽을 보고 앉아 처리해도 됩니다.`],
+    ['🟡',`로또는 ${jaesin}쪽(윤도 ${DIR_YUN[jaesin]}, ${DEG[jaesin]})에 있는 판매점에서 삽니다`,`지금 있는 곳에서 ${jaesin}쪽에 있는 로또 판매점을 고릅니다. 그쪽에 없으면 가까운 곳에서 사되, 가게 앞에서 ${jaesin}쪽을 한 번 보고 들어갑니다.`],
     ['🟠',`사람은 ${huisin}쪽(윤도 ${DIR_YUN[huisin]}, ${DEG[huisin]})에서 만납니다`,`미팅·면접·소개 약속 장소를 출발하는 곳에서 ${huisin}쪽으로 잡습니다.`],
-    ['🟢',`나에게 늘 유리한 쪽은 ${fixed}${fixed==='중앙'?'':'('+DEG[fixed]+')'}입니다`,fixed==='중앙'?'방 한가운데나 건물 중심 자리가 나에게 맞습니다. 날짜와 상관없습니다.':`날짜와 상관없이 고정입니다. 책상이 ${fixed}쪽을 보게 두거나, 사무실·투자 지역을 고를 때 ${fixed}쪽을 고릅니다.`],
-    [jaesin===fixed?'⭐':'↔️',jaesin===fixed?'이날은 돈 일 보는 쪽과 늘 유리한 쪽이 같습니다':'이날 돈 일 보는 쪽과 늘 유리한 쪽이 다릅니다',jaesin===fixed?'한 방향만 챙기면 되는 가장 좋은 날입니다.':`이날 하루 일(은행·계약)은 ${jaesin}쪽, 오래 가는 선택(자리·지역)은 ${fixed}쪽을 따릅니다.`],
+    ['🟢',`나에게 늘 유리한 쪽은 ${fixed}${fixed==='중앙'?'':'('+DEG[fixed]+')'}입니다`,fixed==='중앙'?'집 근처, 늘 다니던 가게가 나에게 맞습니다. 날짜와 상관없습니다.':`날짜와 상관없이 고정입니다. 단골 판매점을 정할 때 집에서 ${fixed}쪽에 있는 곳을 고릅니다.`],
+    [jaesin===fixed?'⭐':'↔️',jaesin===fixed?'이날은 돈 일 보는 쪽과 늘 유리한 쪽이 같습니다':'이날 돈 일 보는 쪽과 늘 유리한 쪽이 다릅니다',jaesin===fixed?'한 방향만 챙기면 되는 가장 좋은 날입니다.':`이날 살 판매점은 ${jaesin}쪽, 단골로 정할 판매점은 ${fixed}쪽을 따릅니다.`],
   ].map(([ic,t,p])=>`<div class="card"><div class="ic">${ic}</div><div><h3>${t}</h3><p>${p}</p></div></div>`).join('');
   $('todo').innerHTML=ADVICE[gl].map(([ic,p])=>`<div class="card"><div class="ic">${ic}</div><p>${p}</p></div>`).join('');
   $('dayWhy').innerHTML=x.reasons.length?x.reasons.map(r=>`<div class="${r.w>0?'g':'b'}">${r.txt} <b>(${r.w>0?'+':''}${Math.round(r.w*10)/10})</b></div>`).join(''):'<div>이날은 내 사주와 특별히 맞물리는 것이 없어 재물운이 평범합니다.</div>';
@@ -385,7 +388,7 @@ $('wSel').addEventListener('change',e=>{ weekOff=Number(e.target.value); renderW
 $('dPrev').addEventListener('click',()=>{ selJ--; renderDay(); window.scrollTo(0,0); });
 $('dNext').addEventListener('click',()=>{ selJ++; renderDay(); window.scrollTo(0,0); });
 $('copyBtn').addEventListener('click',()=>{ if(!lastDay) return; const x=lastDay; const [gl]=grade(x.score);
-  const txt=`${fromJdn(x.J).y}년 ${fmtK(x.J)} 재물운 ${gl}(${x.score>0?'+':''}${x.score})\n출발하는 곳에서 돈 일은 ${JAESIN[x.s]}쪽(${DEG[JAESIN[x.s]]}), 사람은 ${HUISIN[x.s]}쪽(${DEG[HUISIN[x.s]]})\n${ADVICE[gl][0][1]}`;
+  const txt=`${fromJdn(x.J).y}년 ${fmtK(x.J)} 로또 운 ${gl}(${x.score>0?'+':''}${x.score})\n지금 있는 곳에서 ${JAESIN[x.s]}쪽(${DEG[JAESIN[x.s]]}) 판매점\n${ADVICE[gl][0][1]}`;
   const btn=$('copyBtn'); const done=()=>{btn.textContent='복사했습니다'; setTimeout(()=>btn.textContent='이날 정보 복사하기',1500);};
   try{ navigator.clipboard.writeText(txt).then(done).catch(()=>{btn.textContent=txt;}); }catch(e){ btn.textContent=txt; } });
 window.addEventListener('hashchange',()=>{ const h=location.hash.slice(1); if(!ME){show('input');return;} if(h==='day'&&selJ!=null){renderDay();show('day');} else if(h==='week'){renderWeek();show('week');} else show('input'); });
