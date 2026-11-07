@@ -103,6 +103,16 @@ details summary{cursor:pointer;font-weight:700;color:var(--gold);padding:6px 0}
 .store b{font-size:1.05rem}
 .store .meta{font-size:.9rem;color:var(--muted)}
 .store a{display:inline-block;padding:10px 12px;border-radius:10px;background:var(--gold);color:var(--gold-ink);font-weight:700;text-decoration:none;white-space:nowrap}
+.rec{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:var(--panel2);border-radius:12px;padding:12px 14px}
+.rec b{font-size:1.05rem}.rec .meta{font-size:.9rem;color:var(--muted)}
+.rec .res{font-weight:700;padding:6px 10px;border-radius:8px;background:var(--panel);border:1px solid var(--line);white-space:nowrap}
+.rec .res.win{border-color:var(--good);color:var(--good)}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat div{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 8px;text-align:center}
+.stat b{display:block;font-family:var(--display);font-size:1.7rem;font-variant-numeric:tabular-nums}
+.stat span{font-size:.85rem;color:var(--muted)}
+.choice{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.choice button{padding:12px 4px;font-size:.95rem;background:var(--panel2);color:var(--fg);border:1px solid var(--line)}
 .foot{font-size:.85rem;color:var(--muted);border-top:1px solid var(--line);padding-top:14px;margin-top:20px}
 @media (prefers-reduced-motion:no-preference){ .dayrow{transition:transform .12s} .dayrow:active{transform:scale(.985)} }
 </style>
@@ -143,6 +153,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--gold);padding:6px 0}
     <div><div class="big" id="meLine"></div><div class="note" id="meSub"></div></div>
     <button class="edit" id="toInput">입력 바꾸기</button>
   </div>
+  <div class="panel" id="askResult" hidden></div>
   <button class="next" id="nextBest"></button>
   <div class="week" id="weekList"></div>
   <button id="installBtn" class="copy" style="margin-top:12px" hidden>📲 홈 화면에 앱으로 설치하기</button>
@@ -152,6 +163,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--gold);padding:6px 0}
     <div class="pillars" id="pillars"></div>
     <div class="grid" id="diag" style="margin-top:12px"></div>
   </details>
+  <div class="pn" style="margin-top:12px"><button id="toRecord">📒 내 기록</button><button id="icsWeek">📅 이번 회차 길일 캘린더에</button></div>
   <p class="foot">사주 길일은 당첨 확률을 바꾸지 않습니다. 이 앱은 기분 좋게 사는 날과 방향을 고르는 재미로만 쓰세요. 로또는 회차당 한 장(5천 원)이면 충분하고, 과하게 느껴지면 한국도박문제예방치유원 1336으로 상담할 수 있습니다.</p>
 </section>
 
@@ -171,10 +183,18 @@ details summary{cursor:pointer;font-weight:700;color:var(--gold);padding:6px 0}
   </div>
   <div class="panel"><h2 id="whyTitle">이날 할 일과 피할 일</h2><div class="grid" id="todo"></div></div>
   <div class="panel"><h2>이날 로또 운이 이렇게 나온 이유</h2><div class="why" id="dayWhy"></div></div>
-  <button class="copy" id="copyBtn" style="margin-top:14px">이날 정보 복사하기</button>
+  <div class="pn" style="margin-top:14px"><button id="boughtBtn" style="background:var(--gold);color:var(--gold-ink);border:0">🎫 이날 샀어요</button><button id="icsDay">📅 캘린더에 넣기</button></div>
+  <button class="copy" id="copyBtn" style="margin-top:10px">이날 정보 복사하기</button>
   <div class="pn"><button id="dPrev">‹ 전날</button><button id="dNext">다음날 ›</button></div>
 </section>
 
+<!-- 화면 4: 내 기록 -->
+<section class="view" id="v-record" hidden>
+  <div class="bar"><button class="back" id="recToWeek">‹ 주간 목록으로</button><h1>내 로또 기록</h1><p class="sub">이 기기에만 저장됩니다. 기기를 바꾸면 사라집니다.</p></div>
+  <div class="grid" id="recSummary" style="margin-top:12px"></div>
+  <div class="panel"><h2>회차별 기록</h2><div class="grid" id="recList"></div></div>
+  <button class="copy" id="recClear" style="margin-top:14px">기록 전부 지우기</button>
+</section>
 </div>
 
 <script>
@@ -269,7 +289,7 @@ function readInput(){
   try{localStorage.setItem('jaemul',JSON.stringify({d:$('bdate').value,t:$('btime').value,n:$('bname').value,so:$('optSolar').checked,ya:$('optYaja').checked}));}catch(e){}
   return true;
 }
-function show(v){ ['input','week','day'].forEach(k=>$('v-'+k).hidden=(k!==v)); window.scrollTo(0,0); if(location.hash!=='#'+v) history.replaceState(null,'','#'+v); }
+function show(v){ ['input','week','day','record'].forEach(k=>$('v-'+k).hidden=(k!==v)); window.scrollTo(0,0); if(location.hash!=='#'+v) history.replaceState(null,'','#'+v); }
 
 // ===== 화면 2 =====
 function renderWeek(){
@@ -279,6 +299,7 @@ function renderWeek(){
   const base=jc>=2?'타고난 재물운이 든든한 편':jc===1?'타고난 재물운이 있는 편':'타고난 재물운보다 때를 잘 고르는 게 중요한 편';
   $('meLine').textContent=`${name?name+' 님은 ':''}${base}입니다.`;
   $('meSub').textContent=`돈 일은 ${EL_DIR[me.jaeEl]}쪽에서 보면 늘 유리하고, 도와주는 사람은 ${gwDays.map(fmtK).join('과 ')}에 나타납니다.`;
+  renderAskResult();
   const sel=$('wSel'); sel.innerHTML='';
   for(let i=-1;i<=12;i++){const a=WEEK0+i*7,b=a+6; const lab=`${roundOf(a)}회 · ${fmt(a).slice(5)}(일)~${fmt(b).slice(5)}(토)`+(i===0?' · 이번 회차':i===1?' · 다음 회차':'');
     const o=document.createElement('option'); o.value=i; o.textContent=lab; sel.appendChild(o);}
@@ -288,7 +309,7 @@ function renderWeek(){
   // 가장 가까운 최상·좋음 날
   let nb=null; for(let i=0;i<60&&!nb;i++){const x=scoreDay(me,J_TODAY+i); if(x.score>=4) nb=x;}
   if(!nb) for(let i=0;i<60&&!nb;i++){const x=scoreDay(me,J_TODAY+i); if(x.score>=2) nb=x;}
-  if(nb){const dd=nb.J-J_TODAY; $('nextBest').innerHTML=`<div class="ic">⭐</div><div><b>${dd===0?'오늘':dd===1?'내일':dd+'일 뒤'} ${fmtK(nb.J)}</b><small>앞으로 로또 사기 가장 좋은 날입니다. ${ONE[grade(nb.score)[0]]}. 누르면 어느 쪽 판매점으로 갈지 나옵니다.</small></div>`; $('nextBest').dataset.j=nb.J; $('nextBest').hidden=false;} else $('nextBest').hidden=true;
+  if(nb){const dd=nb.J-J_TODAY; $('nextBest').innerHTML=`<div class="ic">⭐</div><div><b>${dd===0?'오늘':dd===1?'내일':dd+'일 뒤'} ${fmtK(nb.J)}</b><small>${roundOf(nb.J-((nb.J+1)%7))}회 기준, 앞으로 로또 사기 가장 좋은 날입니다. ${ONE[grade(nb.score)[0]]}. 누르면 어느 쪽 판매점으로 갈지 나옵니다.</small></div>`; $('nextBest').dataset.j=nb.J; $('nextBest').hidden=false;} else $('nextBest').hidden=true;
   const days=[]; for(let i=0;i<7;i++) days.push(scoreDay(me,a+i));
   const best=Math.max(...days.map(x=>x.score));
   $('weekList').innerHTML=days.map(x=>{const c=fromJdn(x.J); const w=(x.J+1)%7; const [gl,gc]=grade(x.score);
@@ -330,6 +351,7 @@ function renderDay(){
   ].map(([ic,t,p])=>`<div class="card"><div class="ic">${ic}</div><div><h3>${t}</h3><p>${p}</p></div></div>`).join('');
   $('todo').innerHTML=ADVICE[gl].map(([ic,p])=>`<div class="card"><div class="ic">${ic}</div><p>${p}</p></div>`).join('');
   $('storeTitle').textContent=`${jaesin}쪽에 있는 로또 판매점`; $('storeList').innerHTML='';
+  renderBoughtBtn();
   $('dayWhy').innerHTML=x.reasons.length?x.reasons.map(r=>`<div class="${r.w>0?'g':'b'}">${r.txt} <b>(${r.w>0?'+':''}${Math.round(r.w*10)/10})</b></div>`).join(''):'<div>이날은 내 사주와 특별히 맞물리는 것이 없어 재물운이 평범합니다.</div>';
 }
 function drawCompass(fixed,jaesin,huisin,x){
@@ -393,6 +415,51 @@ function drawCompass(fixed,jaesin,huisin,x){
 }
 
 // ===== 이벤트 =====
+
+// ===== 기록 (기기 저장) =====
+const RESULTS={none:'꽝',r5:'5등',r4:'4등',r3:'3등 이상'};
+function loadRec(){ try{ return JSON.parse(localStorage.getItem('jaemul_rec')||'{}'); }catch(e){ return {}; } }
+function saveRec(r){ try{ localStorage.setItem('jaemul_rec',JSON.stringify(r)); }catch(e){} }
+const recKey=J=>String(J);
+function drawPassed(J){ const sat=J-((J+1)%7)+6; const now=new Date(); const nowJ=jdn(now.getFullYear(),now.getMonth()+1,now.getDate()); return nowJ>sat || (nowJ===sat && now.getHours()*60+now.getMinutes()>=20*60+35); }
+function renderAskResult(){
+  const rec=loadRec(); const box=$('askResult');
+  const pending=Object.values(rec).filter(r=>r.bought&&!r.result&&drawPassed(r.J)).sort((a,b)=>b.J-a.J);
+  if(!pending.length){ box.hidden=true; return; }
+  const r=pending[0]; const rd=roundOf(r.J-((r.J+1)%7));
+  box.innerHTML=`<h2>${rd}회 결과는 어땠나요?</h2><p class="note">${fmtK(r.J)}에 산 로또입니다. 추첨이 끝났으니 결과를 남겨 두면 길일 기록이 쌓입니다.</p>
+    <div class="choice">${Object.entries(RESULTS).map(([k,v])=>`<button data-k="${k}">${v}</button>`).join('')}</div>`;
+  box.hidden=false;
+  box.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ const rec2=loadRec(); rec2[recKey(r.J)].result=b.dataset.k; saveRec(rec2); renderAskResult(); }));
+}
+function renderBoughtBtn(){ const rec=loadRec(); const b=$('boughtBtn'); const on=!!(rec[recKey(selJ)]&&rec[recKey(selJ)].bought); b.textContent=on?'✅ 이날 샀어요 (누르면 취소)':'🎫 이날 샀어요'; b.style.opacity=on?'.85':'1'; }
+$('boughtBtn').addEventListener('click',()=>{ const rec=loadRec(); const k=recKey(selJ); const x=scoreDay(ME,selJ);
+  if(rec[k]&&rec[k].bought){ delete rec[k]; } else { rec[k]={J:selJ,bought:true,score:x.score,grade:grade(x.score)[0],dir:JAESIN[x.s],result:null,at:Date.now()}; }
+  saveRec(rec); renderBoughtBtn(); });
+function renderRecord(){
+  const rec=loadRec(); const rows=Object.values(rec).filter(r=>r.bought).sort((a,b)=>b.J-a.J);
+  const good=rows.filter(r=>r.score>=2), won=r=>r.result&&r.result!=='none';
+  $('recSummary').innerHTML=`<div class="stat"><div><b>${rows.length}</b><span>산 회차</span></div><div><b>${good.length}</b><span>좋은 날에 산 회차</span></div><div><b>${rows.filter(won).length}</b><span>5등 이상</span></div></div>
+    <p class="note">${good.length?`좋은 날에 산 ${good.length}회 중 ${good.filter(won).length}회 당첨, 그 외 ${rows.length-good.length}회 중 ${rows.filter(r=>r.score<2).filter(won).length}회 당첨.`:'아직 좋은 날에 산 기록이 없습니다.'} 표본이 쌓여야 뜻이 생깁니다. 재미로 보세요.</p>`;
+  $('recList').innerHTML=rows.length?rows.map(r=>{const rd=roundOf(r.J-((r.J+1)%7)); const res=r.result?RESULTS[r.result]:(drawPassed(r.J)?'결과 입력 전':'추첨 전');
+    return `<div class="rec"><div><b>${rd}회 · ${fmtK(r.J)}</b><div class="meta">로또 운 ${r.grade}(${r.score>0?'+':''}${r.score}) · ${r.dir}쪽</div></div><div class="res ${won(r)?'win':''}">${res}</div></div>`;}).join(''):'<p class="note">아직 기록이 없습니다. 상세 화면에서 "이날 샀어요"를 누르면 여기에 쌓입니다.</p>';
+}
+$('toRecord').addEventListener('click',()=>{ renderRecord(); show('record'); });
+$('recToWeek').addEventListener('click',()=>{ renderWeek(); show('week'); });
+$('recClear').addEventListener('click',()=>{ const b=$('recClear'); if(b.dataset.arm){ saveRec({}); renderRecord(); b.textContent='기록 전부 지우기'; delete b.dataset.arm; } else { b.dataset.arm='1'; b.textContent='정말 지우려면 한 번 더 누르세요'; setTimeout(()=>{ b.textContent='기록 전부 지우기'; delete b.dataset.arm; },3000); } });
+
+// ===== 캘린더(.ics) =====
+function icsFor(list){ // list: [{J, title, desc}]
+  const pad=n=>String(n).padStart(2,'0'); const d8=J=>{const c=fromJdn(J);return `${c.y}${pad(c.m)}${pad(c.d)}`;};
+  const ev=list.map(e=>`BEGIN:VEVENT\r\nUID:jaemul-${e.J}@minam205.github.io\r\nDTSTAMP:${d8(J_TODAY)}T000000Z\r\nDTSTART;VALUE=DATE:${d8(e.J)}\r\nDTEND;VALUE=DATE:${d8(e.J+1)}\r\nSUMMARY:${e.title}\r\nDESCRIPTION:${e.desc}\r\nBEGIN:VALARM\r\nTRIGGER:-PT5H\r\nACTION:DISPLAY\r\nDESCRIPTION:${e.title}\r\nEND:VALARM\r\nEND:VEVENT`).join('\r\n');
+  return `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//jaemul-gilil//KO\r\nCALSCALE:GREGORIAN\r\n${ev}\r\nEND:VCALENDAR\r\n`;
+}
+function downloadIcs(text,name){ const blob=new Blob([text],{type:'text/calendar;charset=utf-8'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(url); a.remove();},1000); }
+$('icsDay').addEventListener('click',()=>{ const x=scoreDay(ME,selJ); const [gl]=grade(x.score); downloadIcs(icsFor([{J:selJ,title:`🎫 로또 사는 날 (운 ${gl}, ${JAESIN[x.s]}쪽 판매점)`,desc:`로또 운 ${gl}(${x.score}). 지금 있는 곳에서 ${JAESIN[x.s]}쪽 판매점. 한 장이면 충분합니다.`}]),`lotto-${fmt(selJ)}.ics`); });
+$('icsWeek').addEventListener('click',()=>{ const a=WEEK0+weekOff*7; const days=[]; for(let i=0;i<7;i++){const x=scoreDay(ME,a+i); if(x.score>=2) days.push({J:x.J,title:`🎫 로또 사는 날 (운 ${grade(x.score)[0]}, ${JAESIN[x.s]}쪽)`,desc:`로또 운 ${grade(x.score)[0]}(${x.score}). ${JAESIN[x.s]}쪽 판매점에서 한 장.`});}
+  if(!days.length){ const b=$('icsWeek'); b.textContent='이번 회차엔 좋은 날이 없습니다'; setTimeout(()=>b.textContent='📅 이번 회차 길일 캘린더에',2500); return; }
+  downloadIcs(icsFor(days),`lotto-${roundOf(a)}.ics`); });
+
 $('run').addEventListener('click',()=>{ if(!readInput()) return; weekOff=0; renderWeek(); show('week'); });
 $('toInput').addEventListener('click',()=>show('input'));
 $('toWeek').addEventListener('click',()=>{ weekOff=Math.floor((selJ-WEEK0)/7); renderWeek(); show('week'); });
@@ -406,7 +473,7 @@ $('copyBtn').addEventListener('click',()=>{ if(!lastDay) return; const x=lastDay
   const txt=`${fromJdn(x.J).y}년 ${fmtK(x.J)} 로또 운 ${gl}(${x.score>0?'+':''}${x.score})\n지금 있는 곳에서 ${JAESIN[x.s]}쪽(${DEG[JAESIN[x.s]]}) 판매점\n${ADVICE[gl][0][1]}`;
   const btn=$('copyBtn'); const done=()=>{btn.textContent='복사했습니다'; setTimeout(()=>btn.textContent='이날 정보 복사하기',1500);};
   try{ navigator.clipboard.writeText(txt).then(done).catch(()=>{btn.textContent=txt;}); }catch(e){ btn.textContent=txt; } });
-window.addEventListener('hashchange',()=>{ const h=location.hash.slice(1); if(!ME){show('input');return;} if(h==='day'&&selJ!=null){renderDay();show('day');} else if(h==='week'){renderWeek();show('week');} else show('input'); });
+window.addEventListener('hashchange',()=>{ const h=location.hash.slice(1); if(!ME){show('input');return;} if(h==='day'&&selJ!=null){renderDay();show('day');} else if(h==='record'){renderRecord();show('record');} else if(h==='week'){renderWeek();show('week');} else show('input'); });
 (function init(){
   try{const s=JSON.parse(localStorage.getItem('jaemul')||'null'); if(s){$('bdate').value=s.d;$('btime').value=s.t;$('bname').value=s.n||'';$('optSolar').checked=s.so;$('optYaja').checked=s.ya;}}catch(e){}
   if(readInput()){ renderWeek(); show('week'); } else show('input');
