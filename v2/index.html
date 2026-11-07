@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0f1e">
+<meta name="description" content="이번 회차, 내 복주머니엔 어떤 날이 들어 있을까요. 생년월일만 넣으면 사주로 고른 이번 회차 길일이 요일별 카드로 나옵니다.">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)} body{margin:0} img{max-width:100%} [hidden]{display:none!important}</style>
+<title>복주머니 길일 뽑기</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&family=Noto+Sans+KR:wght@500;700;900&display=swap">
+<style>
+/* 레이아웃: 휴대폰 한 열, 화면 5개(입력 → 뽑기 → 결과 → 상세 → 보관함). 밤하늘 쪽빛 + 금. 가챠 연출(기대 → 공개 → 정리 → 반복)을 길일 공개에 씀. 글자는 60~70대 기준 20px. */
+:root{
+  --bg:#0b0f1e; --panel:#141b33; --panel2:#1d2648; --fg:#f7f1e3; --muted:#bfb7a3; --line:#3a456e;
+  --gold:#f3c74f; --gold2:#b8860b; --gold-ink:#1b1402; --red:#e0392f; --good:#4fd1a8; --warn:#ffb454;
+  --ssr:#f3c74f; --sr:#ff6b5e; --n:#8f97b3;
+  --display:'Noto Serif KR',"Apple SD Gothic Neo",serif; --body:'Noto Sans KR',"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{font-size:20px}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:1rem;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 60px;
+  background-image:radial-gradient(ellipse at 50% -10%,#273057 0%,var(--bg) 55%)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.app{max-width:600px;margin:0 auto}
+.view[hidden]{display:none}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:16px 0 12px;display:grid;gap:10px}
+.bar h1{font-family:var(--display);font-weight:900;font-size:1.5rem;margin:0;line-height:1.25;text-wrap:balance}
+.hook{font-family:var(--display);font-size:1.4rem;font-weight:900;color:var(--gold);line-height:1.3}
+.sub{color:var(--fg);font-size:1rem}
+.note{font-size:.92rem;color:var(--muted);line-height:1.5}
+h2{font-family:var(--display);font-weight:900;font-size:1.3rem;margin:0 0 12px}
+h3{font-size:1.1rem;margin:0 0 6px;font-weight:700}
+p{margin:0}
+.panel{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:18px;margin-top:16px}
+.grid{display:grid;gap:14px}
+label{display:grid;gap:8px;font-weight:700}
+input,select{font:inherit;font-size:1.1rem;padding:14px;border-radius:12px;border:2px solid var(--line);background:#0e1430;color:var(--fg);min-width:0;width:100%;min-height:60px}
+input:focus,select:focus,button:focus-visible{outline:4px solid var(--gold);outline-offset:2px}
+button{font:inherit;font-weight:900;font-size:1.15rem;padding:0 20px;min-height:62px;border-radius:16px;border:0;cursor:pointer;background:linear-gradient(180deg,#ffe08a,var(--gold) 55%,var(--gold2));color:var(--gold-ink);width:100%;box-shadow:0 4px 0 #6b4e05,0 8px 20px rgba(0,0,0,.4)}
+button.ghost{background:var(--panel2);color:var(--fg);border:2px solid var(--line);box-shadow:none}
+button.sm{min-height:50px;font-size:1rem;width:auto;padding:0 16px}
+.sel3{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px}
+.chk{display:flex;gap:12px;align-items:flex-start;font-weight:500;font-size:.95rem}
+.chk input{width:28px;height:28px;min-height:0;flex:none;margin-top:4px}
+.back{background:transparent;color:var(--gold);border:0;font-weight:700;font-size:1.05rem;padding:8px 0;text-align:left;width:auto;box-shadow:none;min-height:0}
+/* 상단 상태 띠: 회차·추첨 카운트다운·연속 열기 */
+.status{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:var(--panel2);border-radius:14px;padding:12px 14px;margin-top:12px}
+.status b{font-size:1.05rem}
+.status .cd{font-family:var(--display);font-weight:900;color:var(--gold);font-size:1.15rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* 뽑기 무대 */
+.stage{position:relative;display:grid;place-items:center;min-height:420px;margin-top:14px;border-radius:22px;overflow:hidden;background:radial-gradient(circle at 50% 40%,#2a3466 0%,#0e1430 60%);border:2px solid var(--line)}
+.pouch{position:relative;width:220px;height:260px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.pouch svg{width:100%;height:100%;display:block;filter:drop-shadow(0 10px 24px rgba(0,0,0,.6))}
+.pouch .hint{position:absolute;left:50%;bottom:-54px;transform:translateX(-50%);white-space:nowrap;font-weight:900;color:var(--gold);font-size:1.1rem}
+.pouch.charging svg{animation:shake .12s infinite}
+.pouch.burst svg{animation:pop .5s forwards}
+@keyframes shake{0%{transform:rotate(-2deg) translateX(-2px)}50%{transform:rotate(2deg) translateX(2px)}100%{transform:rotate(-2deg) translateX(-2px)}}
+@keyframes pop{0%{transform:scale(1)}60%{transform:scale(1.25);opacity:1}100%{transform:scale(1.6);opacity:0}}
+.ring{position:absolute;inset:0;pointer-events:none}
+.ring i{position:absolute;left:50%;top:50%;width:10px;height:10px;border-radius:50%;background:var(--gold);opacity:0}
+.ring.go i{animation:fly 1s ease-out forwards}
+@keyframes fly{0%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.2);opacity:0}}
+.charge{position:absolute;left:16px;right:16px;bottom:16px;height:14px;border-radius:7px;background:#0a0e22;border:2px solid var(--line);overflow:hidden}
+.charge i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold2),var(--gold));transition:width .05s linear}
+/* 카드 공개 */
+.deck{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:14px}
+.cardx{aspect-ratio:3/4.2;border-radius:10px;position:relative;perspective:800px}
+.cardx .f{position:absolute;inset:0;border-radius:10px;backface-visibility:hidden;display:grid;place-items:center;align-content:center;gap:2px;font-weight:900;transition:transform .55s cubic-bezier(.2,.8,.2,1)}
+.cardx .back{background:repeating-linear-gradient(45deg,#2a3466 0 6px,#1d2648 6px 12px);border:2px solid var(--line);color:var(--muted);font-size:.9rem}
+.cardx .front{transform:rotateY(180deg);border:2px solid var(--line);background:var(--panel2);font-size:.8rem;color:var(--fg)}
+.cardx.flip .back{transform:rotateY(180deg)} .cardx.flip .front{transform:rotateY(0)}
+.cardx .front .g{font-family:var(--display);font-size:1rem;line-height:1}
+.cardx .front .w{font-size:.95rem}
+.cardx .front.ssr{border-color:var(--ssr);background:linear-gradient(160deg,#5a4206,#2a1f04);color:var(--gold);box-shadow:0 0 18px rgba(243,199,79,.7)}
+.cardx .front.sr{border-color:var(--sr);background:linear-gradient(160deg,#5a1d17,#2a0d0a);color:#ffb3aa}
+.cardx .front.n{border-color:var(--n);color:var(--n)}
+.cardx.pre .back{box-shadow:0 0 22px rgba(243,199,79,.9);border-color:var(--gold);animation:pulse .6s infinite alternate}
+@keyframes pulse{from{transform:scale(1)}to{transform:scale(1.06)}}
+/* 큰 결과 카드 */
+.big{position:relative;margin-top:14px;border-radius:22px;padding:22px 18px;text-align:center;border:3px solid var(--line);background:var(--panel);overflow:hidden}
+.big.ssr{border-color:var(--ssr);background:radial-gradient(circle at 50% 0%,#6a4d08 0%,#1a1304 70%);box-shadow:0 0 40px rgba(243,199,79,.45)}
+.big.sr{border-color:var(--sr);background:radial-gradient(circle at 50% 0%,#5a1d17 0%,#1a0a08 70%)}
+.big.n{border-color:var(--n)}
+.big .q{font-size:1rem;color:var(--muted);font-weight:700}
+.big .t{font-family:var(--display);font-size:2.3rem;font-weight:900;line-height:1.15;margin:6px 0}
+.big.ssr .t{color:var(--gold);text-shadow:0 0 18px rgba(243,199,79,.8)}
+.big.sr .t{color:#ffb3aa}
+.big .d{font-size:1.05rem}
+.big .stars{font-size:1.4rem;letter-spacing:.1em;color:var(--gold)}
+.big .shine{position:absolute;inset:-40%;background:conic-gradient(from 0deg,transparent 0 20%,rgba(255,240,180,.18) 25%,transparent 30%,transparent 70%,rgba(255,240,180,.18) 75%,transparent 80%);animation:spin 6s linear infinite;pointer-events:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.big.n .shine{display:none}
+/* 보관함 */
+.album{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.charm{aspect-ratio:3/4;border-radius:12px;border:2px solid var(--line);background:var(--panel2);display:grid;place-items:center;align-content:center;gap:4px;text-align:center;padding:8px;font-size:.85rem}
+.charm.ssr{border-color:var(--ssr);background:linear-gradient(160deg,#5a4206,#2a1f04);color:var(--gold)}
+.charm.sr{border-color:var(--sr);background:linear-gradient(160deg,#5a1d17,#2a0d0a);color:#ffb3aa}
+.charm.locked{opacity:.35}
+.charm .g{font-family:var(--display);font-size:1.3rem;font-weight:900}
+.charm small{color:var(--muted);font-size:.8rem}
+/* 귀인 게이지 */
+.gauge{height:16px;border-radius:8px;background:#0a0e22;border:2px solid var(--line);overflow:hidden;margin-top:8px}
+.gauge i{display:block;height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold))}
+/* 상세(기존) */
+.hero{display:grid;gap:6px;margin-top:8px}
+.hero .date{font-family:var(--display);font-size:1.5rem;font-weight:900}
+.compass svg{width:100%;max-width:360px;height:auto;display:block;margin:0 auto}
+.card{background:var(--panel2);border-radius:14px;padding:16px;display:grid;gap:6px}
+.why{display:grid;gap:10px}
+.why div{font-size:1rem;padding:12px 14px;border-radius:12px;background:var(--panel2);border-left:6px solid var(--line)}
+.why div.g{border-left-color:var(--good)} .why div.b{border-left-color:var(--red)}
+.pn{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.pn button{font-size:1.05rem;padding:0 8px}
+.store{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;background:var(--panel2);border-radius:14px;padding:14px 16px;border-left:8px solid var(--gold)}
+.store.off{border-left-color:var(--line);opacity:.8}
+.store b{font-size:1.1rem}.store .meta{font-size:.95rem;color:var(--muted)}
+.store a{display:inline-grid;place-items:center;min-height:56px;padding:0 16px;border-radius:12px;background:var(--gold);color:var(--gold-ink);font-weight:900;text-decoration:none;white-space:nowrap}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--gold);color:var(--gold-ink);font-weight:900;padding:14px 20px;border-radius:14px;z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.foot{font-size:.9rem;color:var(--muted);border-top:2px solid var(--line);padding-top:16px;margin-top:24px}
+@media (prefers-reduced-motion:reduce){ .pouch.charging svg,.cardx.pre .back,.big .shine{animation:none} }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+<!-- 화면 1: 입력 -->
+<section class="view" id="v-input">
+  <div class="bar"><button class="back" id="inputBack" hidden>‹ 돌아가기</button><h1>복주머니 길일 뽑기</h1>
+    <p class="hook">이번 회차, 내 복주머니엔<br>어떤 날이 들어 있을까요.</p>
+    <p class="sub">생년월일만 넣으면 복주머니가 생깁니다. 열어 보면 이번 회차 내 길일이 요일별로 한 장씩 나옵니다. 대길은 금빛으로 빛납니다.</p>
+    <p class="note">무료이고, 생년월일은 이 휴대폰 밖으로 나가지 않습니다.</p></div>
+  <div class="panel grid">
+    <label>태어난 해·달·날 (양력)<div class="sel3"><select id="selY"></select><select id="selM"></select><select id="selD"></select></div></label>
+    <label>태어난 시 <select id="selH"></select></label>
+    <label>이름 (안 써도 됩니다)<input type="text" id="bname" placeholder="예: 홍길동"></label>
+    <button id="run">내 복주머니 만들기</button>
+    <details><summary style="color:var(--gold);font-weight:700;padding:8px 0;cursor:pointer">자세한 설정</summary>
+      <div class="grid" style="margin-top:8px">
+        <label class="chk"><input type="checkbox" id="optYaja" checked><span>밤 11시 이후에 태어났으면 그날을 생일로 봅니다.</span></label>
+        <label class="chk"><input type="checkbox" id="optSolar" checked><span>서울의 실제 해 시각에 맞춰 30분 당겨 계산합니다.</span></label>
+      </div></details>
+  </div>
+</section>
+
+<!-- 화면 2: 뽑기 -->
+<section class="view" id="v-draw" hidden>
+  <div class="bar"><h1 id="drawTitle">복주머니를 여세요</h1></div>
+  <div class="status"><div><b id="stRound"></b><div class="note" id="stSub"></div></div><div class="cd" id="stCd"></div></div>
+  <div class="stage" id="stage">
+    <div class="ring" id="ring"></div>
+    <div class="pouch" id="pouch">
+      <svg viewBox="0 0 200 240"><defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6b5e"/><stop offset="1" stop-color="#9c1f14"/></linearGradient><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0b0"/><stop offset=".5" stop-color="#f3c74f"/><stop offset="1" stop-color="#a87412"/></linearGradient></defs>
+        <path d="M40 90 Q20 230 100 232 Q180 230 160 90 Z" fill="url(#pg)" stroke="#5a0e08" stroke-width="3"/>
+        <path d="M55 95 Q38 200 100 205 Q162 200 145 95 Z" fill="none" stroke="#ffb3aa" stroke-width="2" opacity=".5"/>
+        <path d="M45 85 Q100 60 155 85 L150 100 Q100 78 50 100 Z" fill="url(#gg)"/>
+        <ellipse cx="100" cy="88" rx="30" ry="12" fill="#5a0e08"/>
+        <path d="M70 70 Q100 30 130 70 Q115 60 100 72 Q85 60 70 70 Z" fill="url(#pg)" stroke="#5a0e08" stroke-width="2"/>
+        <circle cx="100" cy="150" r="36" fill="url(#gg)"/><text x="100" y="163" text-anchor="middle" font-size="36" font-weight="900" fill="#5a0e08" font-family="Noto Serif KR,serif">福</text>
+      </svg>
+      <div class="hint" id="pouchHint">꾹 눌러서 여세요</div>
+    </div>
+    <div class="charge"><i id="chargeBar"></i></div>
+  </div>
+  <div class="deck" id="deck"></div>
+  <p class="note" id="drawNote" style="margin-top:12px">한 번에 한 장씩 뒤집힙니다. 금빛으로 떨리는 카드가 대길입니다.</p>
+  <div class="pn"><button class="ghost" id="toAlbum">보관함</button><button class="ghost" id="toInput">생년월일</button></div>
+</section>
+
+<!-- 화면 3: 결과 -->
+<section class="view" id="v-result" hidden>
+  <div class="bar"><h1 id="resTitle"></h1></div>
+  <div class="big" id="bigCard"><div class="shine"></div><div class="q" id="bigQ"></div><div class="stars" id="bigStars"></div><div class="t" id="bigT"></div><div class="d" id="bigD"></div></div>
+  <button id="toDetail" style="margin-top:14px">이날 자세히 보기 (방향·판매점)</button>
+  <div class="panel"><h2>이번 회차 일곱 장</h2><div class="deck" id="deck2"></div><p class="note" style="margin-top:10px">카드를 누르면 그날로 갑니다.</p></div>
+  <div class="panel"><h2>귀인이 오는 날까지</h2><p id="gwText"></p><div class="gauge"><i id="gwBar"></i></div><p class="note" style="margin-top:8px">귀인 날은 12일마다 두 번 반드시 돌아옵니다. 이건 연출이 아니라 사주 규칙입니다.</p></div>
+  <div class="pn"><button class="ghost" id="resAlbum">보관함</button><button class="ghost" id="resNext">다음 회차 복주머니</button></div>
+  <button class="ghost" id="resPrev" style="margin-top:10px">지난 회차 다시 보기</button>
+  <div class="panel" id="askResult" hidden></div>
+  <p class="foot">카드 뒤집기는 연출이고, 등급은 사주 계산입니다. 사주 길일은 당첨 확률을 바꾸지 않습니다. 회차당 한 장(5천 원)이면 충분하고, 지나치다 싶으면 한국도박문제예방치유원 ☎1336.</p>
+</section>
+
+<!-- 화면 4: 상세 -->
+<section class="view" id="v-day" hidden>
+  <div class="bar"><button class="back" id="toResult">‹ 결과로</button></div>
+  <div class="hero" id="dayHero"></div>
+  <div class="panel"><h2 id="todoTitle">이날 할 일</h2><div class="grid" id="todo"></div></div>
+  <div class="panel"><h2>이날 어느 쪽으로 가면 좋은가</h2><div class="compass"><svg id="compassSvg" viewBox="0 0 345 345" role="img" aria-label="재물 방위 나침반"></svg></div><div class="grid" id="legend" style="margin-top:14px"></div></div>
+  <div class="panel" id="storePanel"><h2 id="storeTitle">이 방향에 있는 로또 판매점</h2><p class="note">지금 있는 곳에서 그 방향 2.5km 안의 판매점을 찾습니다. 위치는 휴대폰 안에서만 쓰고 저장하지 않습니다.</p>
+    <div class="grid" style="margin-top:12px"><button id="storeGps">내 위치로 판매점 찾기</button><div style="display:flex;gap:8px"><input type="text" id="storeAddr" placeholder="또는 동네 이름" style="flex:1"><button class="ghost" id="storeAddrBtn" style="width:auto;padding:0 18px">찾기</button></div></div>
+    <div id="storeList" class="grid" style="margin-top:12px"></div></div>
+  <div class="panel"><h2>이날 운이 이렇게 나온 까닭</h2><div class="why" id="dayWhy"></div></div>
+  <button id="boughtBtn" style="margin-top:16px">이날 샀어요</button>
+  <div class="pn"><button class="ghost" id="copyBtn">자녀에게 보내기</button><button class="ghost" id="icsDay">달력에 넣기</button></div>
+</section>
+
+<!-- 화면 5: 보관함 -->
+<section class="view" id="v-album" hidden>
+  <div class="bar"><button class="back" id="albumBack">‹ 돌아가기</button><h1>내 복주머니 보관함</h1><p class="note">연 회차마다 카드가 쌓입니다. 금빛 카드(대길)를 모아 보세요.</p></div>
+  <div class="status"><div><b id="albumStat"></b><div class="note" id="albumSub"></div></div></div>
+  <div class="panel"><h2>대길 카드</h2><div class="album" id="albumSsr"></div></div>
+  <div class="panel"><h2>산 날과 결과</h2><div class="grid" id="recList"></div></div>
+  <button class="ghost" id="recClear" style="margin-top:14px">기록 전부 지우기</button>
+</section>
+
+</div>
+
+<script>
+
+// ===== 기초 표 =====
+const SK=['갑','을','병','정','무','기','경','신','임','계'], SH='甲乙丙丁戊己庚辛壬癸';
+const BK=['자','축','인','묘','진','사','오','미','신','유','술','해'], BH='子丑寅卯辰巳午未申酉戌亥';
+const ANIMAL=['쥐','소','호랑이','토끼','용','뱀','말','양','원숭이','닭','개','돼지'];
+const EK=['나무(목)','불(화)','흙(토)','쇠(금)','물(수)'];
+const STEM_EL=[0,0,1,1,2,2,3,3,4,4];
+const BR_EL=[4,2,0,0,2,1,1,2,3,3,2,4];
+const BR_MAIN=[9,5,0,1,4,2,3,5,6,7,4,8];
+const GWIIN={0:[1,7],4:[1,7],6:[1,7],1:[0,8],5:[0,8],2:[11,9],3:[11,9],7:[2,6],8:[5,3],9:[5,3]};
+const YUKHAP={0:1,1:0,2:11,11:2,3:10,10:3,4:9,9:4,5:8,8:5,6:7,7:6};
+const SAMHAP=[[8,0,4],[11,3,7],[2,6,10],[5,9,1]];
+const JAESIN={0:'동북',1:'동북',2:'서남',3:'서남',4:'북',5:'북',6:'동',7:'동',8:'남',9:'남'};
+const HUISIN={0:'동북',5:'동북',1:'서북',6:'서북',2:'서남',7:'서남',3:'남',8:'남',4:'동남',9:'동남'};
+const EL_DIR=['동','남','중앙','서','북'];
+const DIR_ANG={'북':0,'동북':45,'동':90,'동남':135,'남':180,'서남':225,'서':270,'서북':315};
+const DIR_YUN={'북':'자(子)','동북':'간(艮)','동':'묘(卯)','동남':'손(巽)','남':'오(午)','서남':'곤(坤)','서':'유(酉)','서북':'건(乾)'};
+const WD='일월화수목금토';
+
+// ===== 천문 =====
+function jdn(y,m,d){const a=Math.floor((14-m)/12),y2=y+4800-a,m2=m+12*a-3;return d+Math.floor((153*m2+2)/5)+365*y2+Math.floor(y2/4)-Math.floor(y2/100)+Math.floor(y2/400)-32045;}
+function fromJdn(J){const a=J+32044,b=Math.floor((4*a+3)/146097),c=a-Math.floor(146097*b/4),d=Math.floor((4*c+3)/1461),e=c-Math.floor(1461*d/4),m=Math.floor((5*e+2)/153);
+  return {d:e-Math.floor((153*m+2)/5)+1, m:m+3-12*Math.floor(m/10), y:100*b+d-4800+Math.floor(m/10)};}
+function sunLon(jd){const T=(jd-2451545)/36525,r=Math.PI/180;
+  const L0=280.46646+36000.76983*T+0.0003032*T*T, M=357.52911+35999.05029*T-0.0001537*T*T;
+  const C=(1.914602-0.004817*T-0.000014*T*T)*Math.sin(M*r)+(0.019993-0.000101*T)*Math.sin(2*M*r)+0.000289*Math.sin(3*M*r);
+  const O=125.04-1934.136*T; let lon=L0+C-0.00569-0.00478*Math.sin(O*r); lon%=360; if(lon<0)lon+=360; return lon;}
+function dayIdx(j){return ((j+49)%60+60)%60;}
+
+// ===== 사주 =====
+function saju(y,m,d,hh,mm,solar,yaja){
+  let min=hh*60+mm-(solar?30:0); let shift=0; if(min<0){min+=1440;shift=-1;}
+  const J=jdn(y,m,d)+shift; const civ=fromJdn(J); const h=min/60;
+  const lon=sunLon(J+(h-9-12)/24);
+  let sy=civ.y; if(lon>=270&&lon<315&&civ.m<=2) sy=civ.y-1;
+  const yi=((sy-4)%60+60)%60; const ys=yi%10, yb=yi%12;
+  const mi=Math.floor((((lon-315)%360)+360)%360/30); const mb=(2+mi)%12; const ms=((ys%5)*2+2+mi)%10;
+  const isLate=h>=23; const dJ=(isLate&&!yaja)?J+1:J; const di=dayIdx(dJ); const ds=di%10, db=di%12;
+  const hb=Math.floor(((h+1)%24)/2); const stemForHour=(isLate&&yaja)?dayIdx(J+1)%10:ds; const hs=((stemForHour%5)*2+hb)%10;
+  const me={year:{s:ys,b:yb},month:{s:ms,b:mb},day:{s:ds,b:db,idx:di},hour:{s:hs,b:hb}};
+  const meEl=STEM_EL[ds], gen=(meEl+4)%5; let support=0, tot=0;
+  [me.year,me.month,me.day,me.hour].forEach((p,i)=>{ if(i!==2){tot++; if([meEl,gen].includes(STEM_EL[p.s])) support++;}
+    const w=(i===1)?2:1; tot+=w; if([meEl,gen].includes(BR_EL[p.b])) support+=w; });
+  me.ratio=support/tot; me.weak=me.ratio<0.45; me.strong=me.ratio>=0.55; me.jaeEl=(meEl+2)%5; me.meEl=meEl;
+  return me;
+}
+function relOf(me,st){return (STEM_EL[st]-STEM_EL[me]+5)%5;}
+
+// ===== 점수 (쉬운 말 설명 포함) =====
+function scoreDay(me,J){
+  const di=dayIdx(J), s=di%10, b=di%12; const reasons=[]; let sc=0; const mul=me.weak?0.6:1;
+  const add=(txt,w)=>{reasons.push({txt,w}); sc+=w;};
+  const pyeon=st=>(st%2)===(me.day.s%2); // 음양이 같으면 편재(횡재), 다르면 정재(월급)
+  if(STEM_EL[s]===me.jaeEl) add(pyeon(s)?`이날은 한꺼번에 들어오는 돈(횡재) 기운이 겉으로 드러난 날입니다. 로또에 가장 맞는 기운입니다.`:`이날은 꾸준히 들어오는 돈(월급) 기운이 드러난 날입니다. 로또보다는 일로 버는 날입니다.`,(pyeon(s)?4:1.5)*mul);
+  if(STEM_EL[BR_MAIN[b]]===me.jaeEl) add(pyeon(BR_MAIN[b])?`이날은 바탕에도 횡재 기운이 깔려 있어 두 겹입니다.`:`이날은 바탕에 월급 기운이 깔려 있습니다.`,(pyeon(BR_MAIN[b])?4:1.5)*mul);
+  {const YM={2:8,6:8,10:8, 8:2,0:2,4:2, 5:11,9:11,1:11, 11:5,3:5,7:5}; if(YM[me.day.b]===b) add(`이날은 움직이면 운이 생기는 날(역마)입니다. 직접 나가서 사는 게 맞습니다.`,1.5);}
+  if(GWIIN[me.day.s].includes(b)) add(`나를 도와주는 사람이 나타나는 날입니다.`,2);
+  if((s+5)%10===me.day.s) add(`이날 기운이 나와 손을 잡는 짝이라 거래 상대와 뜻이 맞습니다.`,2);
+  if(YUKHAP[b]===me.day.b) add(`이날은 내 생일과 짝을 이루는 날이라 일이 순조롭습니다.`,2);
+  if(b!==me.day.b&&SAMHAP.some(g=>g.includes(b)&&g.includes(me.day.b))) add(`이날은 내 생일과 같은 편인 날입니다.`,1.5);
+  if((b+6)%12===me.day.b) add(`이날은 내 생일과 정면으로 부딪치는 날입니다. 계약·송금은 피합니다.`,-3);
+  if((b+6)%12===me.year.b) add(`이날은 내 띠(${ANIMAL[me.year.b]}띠)와 부딪치는 날입니다.`,-2);
+  const st=Math.floor(me.day.idx/10)*10; if(b===(st+10)%12||b===(st+11)%12) add(`나에게는 빈칸 같은 날이라 일이 헛돌기 쉽습니다.`,-2);
+  if(relOf(me.day.s,s)===3&&(s%2)===(me.day.s%2)) add(`이날 기운이 나를 세게 누르는 날입니다. 무리한 결정을 피합니다.`,-1.5);
+  if(me.weak){const r=relOf(me.day.s,s); if(r===0||r===4) add(`내 힘을 보태 주는 날이라 돈을 지키기 좋습니다.`,1);}
+  return {J,s,b,score:Math.round(sc*10)/10,reasons};
+}
+
+
+function drawCompass(fixed,jaesin,huisin,x){
+  // 황금 윤도: 검은 옻칠 원판 위에 금속 광택의 금 테·금 고리·돋을새김 글자. 안쪽부터 팔괘 → 24방위 → 24절기 → 72분금.
+  const cx=170,cy=170; const pt=(a,r)=>{const t=(a-90)*Math.PI/180;return [cx+r*Math.cos(t),cy+r*Math.sin(t)];};
+  const sector=(a0,a1,r0,r1)=>{const [ax,ay]=pt(a0,r1),[bx,by]=pt(a1,r1),[cx1,cy1]=pt(a1,r0),[dx,dy]=pt(a0,r0);return `M${ax},${ay} A${r1},${r1} 0 0 1 ${bx},${by} L${cx1},${cy1} A${r0},${r0} 0 0 0 ${dx},${dy} Z`;};
+  const INK='#120d05', RED='#e0392f';
+  const D24=['자','계','축','간','인','갑','묘','을','진','손','사','병','오','정','미','곤','신','경','유','신','술','건','해','임'];
+  const JEOLGI=['동지','소한','대한','입춘','우수','경칩','춘분','청명','곡우','입하','소만','망종','하지','소서','대서','입추','처서','백로','추분','한로','상강','입동','소설','대설'];
+  const GUA=[[0,1,0],[1,0,0],[0,0,1],[0,1,1],[1,0,1],[0,0,0],[1,1,0],[1,1,1]];
+  const R=168, rJeol=[126,150], r24=[88,124], rGua=[52,86], rWell=38;
+  const gold='url(#gm)', goldT='url(#gt)';
+  let s=`<defs>
+    <linearGradient id="gm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff6c8"/><stop offset=".18" stop-color="#f4d06a"/><stop offset=".42" stop-color="#b8841c"/><stop offset=".55" stop-color="#f7d873"/><stop offset=".75" stop-color="#a86f12"/><stop offset="1" stop-color="#fbe9a6"/></linearGradient>
+    <linearGradient id="gt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3c0"/><stop offset=".5" stop-color="#f0c251"/><stop offset="1" stop-color="#b07a14"/></linearGradient>
+    <radialGradient id="lac" cx="38%" cy="32%" r="85%"><stop offset="0" stop-color="#3a2f1e"/><stop offset=".45" stop-color="#1a140c"/><stop offset="1" stop-color="#070503"/></radialGradient>
+    <radialGradient id="well" cx="40%" cy="35%" r="80%"><stop offset="0" stop-color="#241b0e"/><stop offset="1" stop-color="#050302"/></radialGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <filter id="emb" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1" stdDeviation=".5" flood-color="#000" flood-opacity=".9"/><feDropShadow dx="0" dy="-.5" stdDeviation=".3" flood-color="#fff8d0" flood-opacity=".5"/></filter>
+    <filter id="ring" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="1.2" stdDeviation=".8" flood-color="#000" flood-opacity=".8"/></filter>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>`;
+  // 금 테(두꺼운 금속 띠) + 옻칠 원판
+  s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="#000" opacity=".6" transform="translate(0 3)"/>`;
+  s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="${gold}"/><circle cx="${cx}" cy="${cy}" r="${R-3}" fill="none" stroke="#fff6c8" stroke-width=".8" opacity=".7"/><circle cx="${cx}" cy="${cy}" r="${R-11}" fill="none" stroke="#5a3d08" stroke-width="1"/>`;
+  s+=`<circle cx="${cx}" cy="${cy}" r="${R-12}" fill="url(#lac)"/>`;
+  // 72분금 눈금(금 테 위에 새김)
+  for(let i=0;i<72;i++){const a=i*5; const [x1,y1]=pt(a,R-1.5),[x2,y2]=pt(a,i%3===0?R-9.5:R-6); s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#4a3006" stroke-width="${i%3===0?1.4:0.8}"/>`;}
+  // 강조 쐐기: 광택 금
+  const aJ=DIR_ANG[jaesin]; s+=`<path d="${sector(aJ-22.5,aJ+22.5,rGua[0],rJeol[1])}" fill="${gold}" filter="url(#glow)"/><path d="${sector(aJ-22.5,aJ+22.5,rGua[0],rJeol[1])}" fill="url(#sheen)"/>`;
+  if(fixed!=='중앙'&&fixed!==jaesin){const aF=DIR_ANG[fixed]; s+=`<path d="${sector(aF-22.5,aF+22.5,rGua[0],rJeol[1])}" fill="none" stroke="#4fd1a8" stroke-width="3" filter="url(#ring)"/>`;}
+  if(fixed==='중앙') s+=`<circle cx="${cx}" cy="${cy}" r="${rGua[0]-2}" fill="none" stroke="#4fd1a8" stroke-width="3"/>`;
+  // 고리 선(금속)
+  [rJeol[1],rJeol[0],r24[0],rGua[0]].forEach(r=>s+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${gold}" stroke-width="2" filter="url(#ring)"/>`);
+  const inWedge=a=>Math.abs(((a-aJ)%360+540)%360-180)<=22.5;
+  // 24절기 고리
+  for(let i=0;i<24;i++){const a=i*15; const [x1,y1]=pt(a-7.5,rJeol[0]),[x2,y2]=pt(a-7.5,rJeol[1]); s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${gold}" stroke-width=".8" opacity=".9"/>`;
+    const [tx,ty]=pt(a,(rJeol[0]+rJeol[1])/2); const rot=a>90&&a<270?a+180:a;
+    s+=`<text x="${tx}" y="${ty}" transform="rotate(${rot} ${tx} ${ty})" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="700" fill="${inWedge(a)?INK:goldT}" filter="${inWedge(a)?'':'url(#emb)'}" font-family="var(--display)">${JEOLGI[i]}</text>`;}
+  // 24방위 고리
+  for(let i=0;i<24;i++){const a=i*15; const [x1,y1]=pt(a-7.5,r24[0]),[x2,y2]=pt(a-7.5,r24[1]); s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${gold}" stroke-width="1"/>`;
+    const main=a%45===0; const [tx,ty]=pt(a,(r24[0]+r24[1])/2); const rot=a>90&&a<270?a+180:a;
+    s+=`<text x="${tx}" y="${ty}" transform="rotate(${rot} ${tx} ${ty})" text-anchor="middle" dominant-baseline="central" font-size="${main?17:12}" font-weight="800" fill="${inWedge(a)?INK:goldT}" filter="${inWedge(a)?'':'url(#emb)'}" font-family="var(--display)">${D24[i]}</text>`;}
+  // 팔괘 고리
+  for(let i=0;i<8;i++){const a=i*45; const col=inWedge(a)&&a===aJ?INK:goldT; const [gx,gy]=pt(a,(rGua[0]+rGua[1])/2); const f=a===aJ?'':'filter="url(#emb)"';
+    GUA[i].forEach((yang,k)=>{const off=(k-1)*6; const w=14,h=3;
+      if(yang) s+=`<rect x="${-w/2}" y="${off-h/2}" width="${w}" height="${h}" rx=".8" fill="${col}" ${f} transform="translate(${gx} ${gy}) rotate(${a})"/>`;
+      else s+=`<rect x="${-w/2}" y="${off-h/2}" width="${w/2-1.5}" height="${h}" rx=".8" fill="${col}" ${f} transform="translate(${gx} ${gy}) rotate(${a})"/><rect x="1.5" y="${off-h/2}" width="${w/2-1.5}" height="${h}" rx=".8" fill="${col}" ${f} transform="translate(${gx} ${gy}) rotate(${a})"/>`;});
+    const [x1,y1]=pt(a-22.5,rGua[0]),[x2,y2]=pt(a-22.5,rGua[1]); s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${gold}" stroke-width=".8"/>`;}
+  // 희신방 표시(주황 구슬, 금 테 위)
+  {const aH=DIR_ANG[huisin]; const [hx,hy]=pt(aH,R-5.5); s+=`<circle cx="${hx}" cy="${hy}" r="6" fill="#ffb454" stroke="#7a3d00" stroke-width="1" filter="url(#ring)"/><circle cx="${hx-1.5}" cy="${hy-1.5}" r="2" fill="#fff" opacity=".7"/>`;}
+  // 중앙 우물과 자침
+  s+=`<circle cx="${cx}" cy="${cy}" r="${rWell+3}" fill="${gold}" filter="url(#ring)"/><circle cx="${cx}" cy="${cy}" r="${rWell}" fill="url(#well)"/>`;
+  {const [nx,ny]=pt(0,rWell-6),[sx,sy]=pt(180,rWell-6); s+=`<line x1="${nx}" y1="${ny}" x2="${sx}" y2="${sy}" stroke="${RED}" stroke-width="1"/>`;}
+  {const [tx,ty]=pt(aJ,rWell-7),[bx,by]=pt(aJ+180,rWell-12),[lx,ly]=pt(aJ+90,4),[rx,ry]=pt(aJ-90,4);
+    s+=`<polygon points="${tx},${ty} ${lx},${ly} ${bx},${by} ${rx},${ry}" fill="${gold}" filter="url(#ring)"/><polygon points="${tx},${ty} ${lx},${ly} ${cx},${cy} ${rx},${ry}" fill="${RED}" opacity=".92"/>`;}
+  s+=`<circle cx="${cx}" cy="${cy}" r="4" fill="${gold}" stroke="#3a2504" stroke-width="1"/>`;
+  // 전체 광택: 왼쪽 위에서 비치는 빛
+  s+=`<ellipse cx="${cx-50}" cy="${cy-70}" rx="120" ry="60" fill="url(#sheen)" transform="rotate(-35 ${cx-50} ${cy-70})" pointer-events="none"/>`;
+  $('compassSvg').innerHTML=s;
+}
+
+// ===== 등급(희귀도 3단계: 대길=금, 길=붉은, 평·흉=보통) =====
+const grade=sc=>sc>=4?['대길','ssr']:sc>=2?['길','sr']:sc>-2?['평','n']:['흉','n'];
+const STARS={'대길':'★★★','길':'★★','평':'★','흉':'☆'};
+const ONE={'대길':'횡재 기운이 가장 센 날입니다. 로또는 이날 삽니다.','길':'횡재 기운이 받쳐 주는 날입니다. 사도 좋습니다.','평':'보통 날입니다. 더 좋은 날이 있으면 기다립니다.','흉':'횡재 기운이 막힌 날입니다. 이날은 사지 않습니다.'};
+const ADVICE={'대길':['이번 회차 로또는 이날 삽니다. 한 장(5천 원)이면 충분합니다.','판매점은 지금 있는 곳에서 아래 나침반의 금색 쪽으로 갑니다.'],'길':['사도 좋은 날입니다. 이번 회차에 대길 날이 따로 있으면 그날로 미룹니다.','금색 쪽 판매점을 고를 수 있으면 고르고, 없으면 가까운 곳에서 삽니다.'],'평':['이날은 사지 않고 기다립니다. 이번 회차에 좋은 날이 없으면 토요일 저녁 8시 전에 아무 날이나 한 장만.','아래 나침반 방향은 참고만 합니다.'],'흉':['이날은 사지 않습니다. 횡재 기운이 막혀 헛돈 쓰기 쉬운 날입니다.','지난 회차 당첨 확인, 번호 정리처럼 돈 안 드는 일만 합니다.']};
+const DEG={'북':'0°','동북':'45°','동':'90°','동남':'135°','남':'180°','서남':'225°','서':'270°','서북':'315°'};
+
+// ===== 상태 =====
+const $=id=>document.getElementById(id);
+let ME=null, WEEK0=0, weekOff=0, selJ=null, lastDay=null;
+const now=new Date(); const J_TODAY=jdn(now.getFullYear(),now.getMonth()+1,now.getDate());
+WEEK0=J_TODAY-((J_TODAY+1)%7);
+const LOTTO1=jdn(2002,12,7); const roundOf=sun=>Math.floor((sun+6-LOTTO1)/7)+1;
+const fmt=J=>{const c=fromJdn(J);return `${c.y}.${String(c.m).padStart(2,'0')}.${String(c.d).padStart(2,'0')}`;};
+const fmtK=J=>{const c=fromJdn(J);return `${c.m}월 ${c.d}일 ${WD[(J+1)%7]}요일`;};
+const HOURS=[['모름',12,0],['자시 (밤 11시~새벽 1시)',23,30],['축시 (새벽 1~3시)',2,0],['인시 (새벽 3~5시)',4,0],['묘시 (새벽 5~7시)',6,0],['진시 (아침 7~9시)',8,0],['사시 (아침 9~11시)',10,0],['오시 (낮 11시~1시)',12,0],['미시 (낮 1~3시)',14,0],['신시 (낮 3~5시)',16,0],['유시 (저녁 5~7시)',18,0],['술시 (저녁 7~9시)',20,0],['해시 (밤 9~11시)',22,0]];
+function fillSelects(){const Y=$('selY'),M=$('selM'),D=$('selD'),H=$('selH'); if(Y.options.length) return;
+  for(let y=1930;y<=2015;y++){const o=document.createElement('option');o.value=y;o.textContent=y+'년';Y.appendChild(o);}
+  for(let m=1;m<=12;m++){const o=document.createElement('option');o.value=m;o.textContent=m+'월';M.appendChild(o);}
+  for(let d=1;d<=31;d++){const o=document.createElement('option');o.value=d;o.textContent=d+'일';D.appendChild(o);}
+  HOURS.forEach((h,i)=>{const o=document.createElement('option');o.value=i;o.textContent=h[0];H.appendChild(o);}); Y.value=1960;M.value=1;D.value=1;H.value=0;}
+function readInput(){ fillSelects(); const y=+$('selY').value,m=+$('selM').value,d=+$('selD').value; if(!y) return false; const h=HOURS[+$('selH').value]||HOURS[0];
+  ME=saju(y,m,d,h[1],h[2],$('optSolar').checked,$('optYaja').checked);
+  try{localStorage.setItem('jaemul2',JSON.stringify({y,m,d,h:+$('selH').value,n:$('bname').value,so:$('optSolar').checked,ya:$('optYaja').checked}));}catch(e){} return true; }
+const VIEWS=['input','draw','result','day','album'];
+function show(v){ VIEWS.forEach(k=>$('v-'+k).hidden=(k!==v)); window.scrollTo(0,0); if(location.hash!=='#'+v) history.replaceState(null,'','#'+v); if(v==='input') $('inputBack').hidden=!ME; }
+function toast(t){ const el=document.createElement('div'); el.className='toast'; el.textContent=t; document.body.appendChild(el); setTimeout(()=>el.remove(),2200); }
+// 열어 본 회차 기록(연출용) + 구매 기록
+function loadOpened(){ try{ return JSON.parse(localStorage.getItem('jaemul_open')||'{}'); }catch(e){ return {}; } }
+function saveOpened(o){ try{ localStorage.setItem('jaemul_open',JSON.stringify(o)); }catch(e){} }
+function loadRec(){ try{ return JSON.parse(localStorage.getItem('jaemul_rec')||'{}'); }catch(e){ return {}; } }
+function saveRec(r){ try{ localStorage.setItem('jaemul_rec',JSON.stringify(r)); }catch(e){} }
+const RESULTS={none:'꽝',r5:'5등 (5천 원)',r4:'4등 (5만 원)',r3:'3등 이상'};
+function drawPassed(J){ const sat=J-((J+1)%7)+6; return J_TODAY>sat || (J_TODAY===sat && now.getHours()*60+now.getMinutes()>=20*60+35); }
+
+// ===== 화면 2: 뽑기 =====
+let weekDays=[], opened=false;
+function setupDraw(){
+  const a=WEEK0+weekOff*7; const rd=roundOf(a); weekDays=[]; for(let i=0;i<7;i++) weekDays.push(scoreDay(ME,a+i));
+  const satJ=a+6; const closed=J_TODAY>satJ||(J_TODAY===satJ&&now.getHours()>=20);
+  $('stRound').textContent=`${rd}회 · ${fmt(a).slice(5)}(일)~${fmt(satJ).slice(5)}(토)`;
+  const op=loadOpened(); const streak=Object.keys(op).length;
+  $('stSub').textContent=streak?`지금까지 ${streak}회차를 열었습니다`:'처음 여는 복주머니입니다';
+  tickCountdown(satJ,closed);
+  const already=op[rd];
+  $('drawTitle').textContent=already?`${rd}회 복주머니는 이미 열었습니다`:`${rd}회 복주머니를 여세요`;
+  $('deck').innerHTML=weekDays.map((x,i)=>`<div class="cardx" data-i="${i}"><div class="f back">${WD[(x.J+1)%7]}</div><div class="f front"></div></div>`).join('');
+  $('pouch').classList.remove('burst','charging'); $('pouch').style.display=already?'none':''; $('chargeBar').style.width='0';
+  $('drawNote').textContent=already?'이미 연 복주머니라 카드가 모두 보입니다. 누르면 결과로 갑니다.':'한 번에 한 장씩 뒤집힙니다. 금빛으로 떨리는 카드가 대길입니다.';
+  if(already){ revealAll(true); } else { opened=false; }
+}
+let cdTimer=null;
+function tickCountdown(satJ,closed){ clearInterval(cdTimer); const draw=new Date(); const c=fromJdn(satJ); draw.setFullYear(c.y,c.m-1,c.d); draw.setHours(20,35,0,0);
+  const f=()=>{ const ms=draw-new Date(); if(closed||ms<0){ $('stCd').textContent='추첨 끝'; return; } const h=Math.floor(ms/3600000), d=Math.floor(h/24); $('stCd').textContent=d>0?`추첨까지 ${d}일 ${h%24}시간`:`추첨까지 ${h}시간 ${Math.floor(ms/60000)%60}분`; }; f(); cdTimer=setInterval(f,30000); }
+// 꾹 눌러서 열기(제스처 → 기대감)
+let holdT=null, hold=0;
+function startHold(e){ if(opened) return; e.preventDefault(); $('pouch').classList.add('charging'); $('pouchHint').textContent='계속 누르세요…'; hold=0; holdT=setInterval(()=>{ hold+=4; $('chargeBar').style.width=Math.min(100,hold)+'%'; if(hold>=100){ clearInterval(holdT); burst(); } },40); }
+function endHold(){ if(opened) return; clearInterval(holdT); if(hold<100){ hold=0; $('chargeBar').style.width='0'; $('pouch').classList.remove('charging'); $('pouchHint').textContent='꾹 눌러서 여세요'; } }
+['pointerdown','touchstart'].forEach(ev=>$('pouch').addEventListener(ev,startHold,{passive:false}));
+['pointerup','pointercancel','pointerleave','touchend'].forEach(ev=>$('pouch').addEventListener(ev,endHold));
+function burst(){ opened=true; const p=$('pouch'); p.classList.remove('charging'); p.classList.add('burst'); const r=$('ring'); r.innerHTML=''; for(let i=0;i<24;i++){const a=i/24*Math.PI*2, d=140+Math.random()*60; const el=document.createElement('i'); el.style.setProperty('--dx',Math.cos(a)*d+'px'); el.style.setProperty('--dy',Math.sin(a)*d+'px'); el.style.animationDelay=(Math.random()*.15)+'s'; r.appendChild(el);} r.classList.add('go'); if(navigator.vibrate) navigator.vibrate([30,40,80]);
+  setTimeout(()=>{ p.style.display='none'; revealAll(false); },500); }
+async function revealAll(instant){
+  const cards=[...$('deck').querySelectorAll('.cardx')]; const best=Math.max(...weekDays.map(x=>x.score));
+  for(let i=0;i<7;i++){ const x=weekDays[i]; const [gl,tier]=grade(x.score); const c=cards[i]; const f=c.querySelector('.front'); f.className='f front '+tier; f.innerHTML=`<div class="g">${gl}</div><div class="w">${x.score>0?'+':''}${x.score}</div>`;
+    if(!instant){ if(tier==='ssr'){ c.classList.add('pre'); await wait(900); c.classList.remove('pre'); } else if(tier==='sr'){ await wait(380); } else { await wait(180); } }
+    c.classList.add('flip'); if(!instant&&tier==='ssr'&&navigator.vibrate) navigator.vibrate([60,40,120]); if(!instant) await wait(tier==='ssr'?700:tier==='sr'?350:160); }
+  const rd=roundOf(WEEK0+weekOff*7); const op=loadOpened(); if(!op[rd]){ op[rd]={at:Date.now(),best:grade(best)[0]}; saveOpened(op); }
+  cards.forEach(c=>c.addEventListener('click',()=>{ renderResult(); show('result'); }));
+  if(!instant){ await wait(500); renderResult(); show('result'); }
+}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+// ===== 화면 3: 결과 =====
+function renderResult(){
+  const a=WEEK0+weekOff*7; const rd=roundOf(a); const satJ=a+6; const closed=J_TODAY>satJ||(J_TODAY===satJ&&now.getHours()>=20);
+  const cand=weekDays.filter(x=>x.J>=J_TODAY&&x.score>=2&&!closed).sort((x,y)=>y.score-x.score||x.J-y.J);
+  const bestAll=[...weekDays].sort((x,y)=>y.score-x.score)[0]; const pick=cand[0]||bestAll; const [gl,tier]=grade(pick.score);
+  $('resTitle').textContent=`${rd}회 복주머니 결과`;
+  const big=$('bigCard'); big.className='big '+(cand.length?tier:'n');
+  $('bigStars').textContent=STARS[gl]; $('bigQ').textContent=cand.length?`${rd}회, 당신의 날은`:(closed?`${rd}회는 판매가 끝났습니다`:`${rd}회 남은 날엔 당신의 날이 없습니다`);
+  $('bigT').textContent=cand.length?`${fmtK(pick.J)}${pick.J===J_TODAY?' (오늘)':''}`:`이 회차는 쉬어도 됩니다`;
+  $('bigD').textContent=cand.length?`로또 운 ${gl} (${pick.score>0?'+':''}${pick.score}점) · ${JAESIN[pick.s]}쪽 가게에서 한 장`:(closed?'다음 회차 복주머니를 열어 보세요.':'이 회차 최고는 '+fmtK(bestAll.J)+' '+grade(bestAll.score)[0]+'이었습니다. 다음 회차를 기대하세요.');
+  selJ=pick.J; $('toDetail').hidden=!cand.length;
+  $('deck2').innerHTML=weekDays.map((x,i)=>{const [g,t]=grade(x.score); return `<div class="cardx flip" data-j="${x.J}"><div class="f back"></div><div class="f front ${t}"><div class="g">${g}</div><div class="w">${WD[(x.J+1)%7]}</div></div></div>`;}).join('');
+  $('deck2').querySelectorAll('.cardx').forEach(c=>c.addEventListener('click',()=>{ selJ=+c.dataset.j; renderDay(); show('day'); }));
+  // 귀인 게이지(정직한 '천장': 12일 주기 규칙)
+  let nxt=null,prev=null; for(let i=0;i<13&&!nxt;i++){ if(GWIIN[ME.day.s].includes(dayIdx(J_TODAY+i)%12)) nxt=J_TODAY+i; } for(let i=0;i<13&&prev==null;i++){ if(GWIIN[ME.day.s].includes(dayIdx(J_TODAY-i)%12)) prev=J_TODAY-i; }
+  const span=nxt-prev||1, done=J_TODAY-prev; $('gwText').textContent=nxt===J_TODAY?'오늘이 귀인 날입니다. 사람을 통해 돈이 들어오기 좋습니다.':`다음 귀인 날은 ${fmtK(nxt)}, ${nxt-J_TODAY}일 남았습니다.`; $('gwBar').style.width=Math.round(done/span*100)+'%';
+  renderAskResult();
+}
+$('toDetail').addEventListener('click',()=>{ renderDay(); show('day'); });
+$('resNext').addEventListener('click',()=>{ if(weekOff<12){ weekOff++; setupDraw(); show('draw'); } });
+$('resPrev').addEventListener('click',()=>{ if(weekOff>-4){ weekOff--; setupDraw(); show('draw'); } });
+$('resAlbum').addEventListener('click',()=>{ renderAlbum(); show('album'); });
+$('toAlbum').addEventListener('click',()=>{ renderAlbum(); show('album'); });
+$('toInput').addEventListener('click',()=>show('input'));
+$('inputBack').addEventListener('click',()=>{ setupDraw(); show('draw'); });
+$('albumBack').addEventListener('click',()=>{ if(opened||loadOpened()[roundOf(WEEK0+weekOff*7)]){ renderResult(); show('result'); } else { setupDraw(); show('draw'); } });
+function renderAskResult(){ const rec=loadRec(); const box=$('askResult'); const pending=Object.values(rec).filter(r=>r.bought&&!r.result&&drawPassed(r.J)).sort((a,b)=>b.J-a.J); if(!pending.length){box.hidden=true;return;} const r=pending[0]; const rd=roundOf(r.J-((r.J+1)%7));
+  box.innerHTML=`<h2>${rd}회 결과는 어땠나요?</h2><p class="note">${fmtK(r.J)}에 산 로또입니다. 결과를 눌러 두면 보관함에 쌓입니다.</p><div class="pn" style="grid-template-columns:1fr 1fr">${Object.entries(RESULTS).map(([k,v])=>`<button class="ghost" data-k="${k}">${v}</button>`).join('')}</div>`; box.hidden=false;
+  box.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ const rec2=loadRec(); rec2[String(r.J)].result=b.dataset.k; saveRec(rec2); renderAskResult(); toast('기록했습니다'); })); }
+
+// ===== 화면 4: 상세 =====
+function renderDay(){
+  const me=ME; const x=scoreDay(me,selJ); lastDay=x; const c=fromJdn(x.J); const [gl,tier]=grade(x.score);
+  $('dayHero').innerHTML=`<div class="date">${c.y}년 ${fmtK(x.J)}${x.J===J_TODAY?' (오늘)':''}</div><div class="note">${SK[x.s]}${BK[x.b]}일 · ${ANIMAL[x.b]}의 날 · <b style="color:${tier==='ssr'?'var(--gold)':tier==='sr'?'#ffb3aa':'var(--muted)'}">${STARS[gl]} ${gl} (${x.score>0?'+':''}${x.score}점)</b></div>`;
+  const fixed=EL_DIR[me.jaeEl], jaesin=JAESIN[x.s], huisin=HUISIN[x.s]; drawCompass(fixed,jaesin,huisin,x);
+  $('legend').innerHTML=[[`로또는 ${jaesin}쪽(${DEG[jaesin]}) 판매점에서 삽니다`,`금색으로 칠한 칸이 ${jaesin}쪽입니다. 지금 있는 곳에서 그쪽 판매점을 고릅니다. 없으면 가까운 곳에서 사되, 가게 앞에서 ${jaesin}쪽을 한 번 보고 들어갑니다.`],['방향은 집이나 지금 있는 곳에서 봅니다','휴대폰 나침반을 켜고 각도를 맞추면 됩니다. 북 0°, 동 90°, 남 180°, 서 270°. 모르겠으면 해 뜨는 쪽이 동쪽입니다.'],[`사람은 ${huisin}쪽(주황 점)에서 만납니다`,`같이 사러 갈 사람은 ${huisin}쪽에서 만나면 좋습니다.`],[`나에게 늘 유리한 쪽은 ${fixed}${fixed==='중앙'?'':'('+DEG[fixed]+', 초록 테두리)'}입니다`,fixed==='중앙'?'집 근처 늘 다니던 가게가 맞습니다.':`단골 판매점은 집에서 ${fixed}쪽에 있는 곳으로 정합니다.`]].map(([t,p])=>`<div class="card"><h3>${t}</h3><p>${p}</p></div>`).join('');
+  $('todoTitle').textContent=(gl==='대길'||gl==='길')?'이날 할 일':'이날 피할 일'; $('todo').innerHTML=ADVICE[gl].map(p=>`<div class="card"><p>${p}</p></div>`).join('');
+  $('storeTitle').textContent=`${jaesin}쪽에 있는 로또 판매점`; $('storeList').innerHTML='';
+  $('dayWhy').innerHTML=x.reasons.length?x.reasons.map(r=>`<div class="${r.w>0?'g':'b'}">${r.txt} <b>(${r.w>0?'+':''}${Math.round(r.w*10)/10})</b></div>`).join(''):'<div>이날은 내 사주와 특별히 맞물리는 것이 없어 보통 날입니다.</div>';
+  renderBoughtBtn();
+}
+function renderBoughtBtn(){ const rec=loadRec(); const on=!!(rec[String(selJ)]&&rec[String(selJ)].bought); $('boughtBtn').textContent=on?'이날 샀다고 적어 두었습니다 (누르면 취소)':'이날 샀어요'; }
+$('boughtBtn').addEventListener('click',()=>{ const rec=loadRec(); const k=String(selJ); const x=scoreDay(ME,selJ); if(rec[k]&&rec[k].bought) delete rec[k]; else rec[k]={J:selJ,bought:true,score:x.score,grade:grade(x.score)[0],dir:JAESIN[x.s],result:null,at:Date.now()}; saveRec(rec); renderBoughtBtn(); toast(rec[k]?'보관함에 넣었습니다':'취소했습니다'); });
+$('toResult').addEventListener('click',()=>{ renderResult(); show('result'); });
+$('copyBtn').addEventListener('click',()=>{ if(!lastDay) return; const x=lastDay; const [gl]=grade(x.score); const txt=`[복주머니 길일 뽑기] 나는 내 길일에 삽니다\n${fmtK(x.J)} · ${STARS[gl]} ${gl}(${x.score>0?'+':''}${x.score}점) · ${JAESIN[x.s]}쪽 가게\n당신 복주머니도 열어 보세요: https://minam205.github.io/jaemul-gilil/v2/`;
+  if(navigator.share){ navigator.share({text:txt}).catch(()=>{}); return; } try{ navigator.clipboard.writeText(txt).then(()=>toast('복사했습니다. 카카오톡에 붙여 넣으세요')); }catch(e){} });
+function icsFor(list){ const pad=n=>String(n).padStart(2,'0'); const d8=J=>{const c=fromJdn(J);return `${c.y}${pad(c.m)}${pad(c.d)}`;}; const ev=list.map(e=>`BEGIN:VEVENT\r\nUID:jaemul-${e.J}@minam205.github.io\r\nDTSTAMP:${d8(J_TODAY)}T000000Z\r\nDTSTART;VALUE=DATE:${d8(e.J)}\r\nDTEND;VALUE=DATE:${d8(e.J+1)}\r\nSUMMARY:${e.title}\r\nDESCRIPTION:${e.desc}\r\nBEGIN:VALARM\r\nTRIGGER:-PT5H\r\nACTION:DISPLAY\r\nDESCRIPTION:${e.title}\r\nEND:VALARM\r\nEND:VEVENT`).join('\r\n'); return `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//jaemul-gilil//KO\r\nCALSCALE:GREGORIAN\r\n${ev}\r\nEND:VCALENDAR\r\n`; }
+$('icsDay').addEventListener('click',()=>{ const x=scoreDay(ME,selJ); const [gl]=grade(x.score); const blob=new Blob([icsFor([{J:selJ,title:`로또 사는 날 (${gl}, ${JAESIN[x.s]}쪽 판매점)`,desc:`로또 운 ${gl}(${x.score}). ${JAESIN[x.s]}쪽 판매점. 한 장이면 충분합니다.`}])],{type:'text/calendar;charset=utf-8'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`lotto-${fmt(selJ)}.ics`; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},1000); });
+
+// ===== 화면 5: 보관함 =====
+function renderAlbum(){
+  const op=loadOpened(); const rounds=Object.keys(op).map(Number).sort((a,b)=>b-a); const ssr=rounds.filter(r=>op[r].best==='대길');
+  $('albumStat').textContent=`연 회차 ${rounds.length} · 대길 카드 ${ssr.length}장`; $('albumSub').textContent=rounds.length?`마지막으로 연 회차 ${rounds[0]}회`:'아직 연 복주머니가 없습니다';
+  const slots=Math.max(6,Math.ceil((ssr.length+1)/3)*3);
+  $('albumSsr').innerHTML=Array.from({length:slots},(_,i)=>{ const r=ssr[i]; return r?`<div class="charm ssr"><div class="g">대길</div><div>${r}회</div><small>${new Date(op[r].at).toLocaleDateString('ko-KR')}</small></div>`:`<div class="charm locked"><div class="g">?</div><small>다음 대길</small></div>`; }).join('');
+  const rec=loadRec(); const rows=Object.values(rec).filter(r=>r.bought).sort((a,b)=>b.J-a.J); const won=r=>r.result&&r.result!=='none';
+  $('recList').innerHTML=rows.length?rows.map(r=>`<div class="store ${won(r)?'':'off'}"><div><b>${roundOf(r.J-((r.J+1)%7))}회 · ${fmtK(r.J)}</b><div class="meta">${STARS[r.grade]||''} ${r.grade} · ${r.dir}쪽 판매점</div></div><div style="font-weight:900">${r.result?RESULTS[r.result]:(drawPassed(r.J)?'결과 입력 전':'추첨 전')}</div></div>`).join(''):'<p class="note">상세 화면에서 "이날 샀어요"를 누르면 여기에 쌓입니다.</p>';
+}
+$('recClear').addEventListener('click',()=>{ const b=$('recClear'); if(b.dataset.arm){ saveRec({}); saveOpened({}); renderAlbum(); b.textContent='기록 전부 지우기'; delete b.dataset.arm; } else { b.dataset.arm='1'; b.textContent='정말 지우려면 한 번 더 누르세요'; setTimeout(()=>{ b.textContent='기록 전부 지우기'; delete b.dataset.arm; },3000); } });
+
+// ===== 시작 =====
+const closedNow=()=>{ const sat=WEEK0+6; return J_TODAY>sat||(J_TODAY===sat&&now.getHours()>=20); };
+$('run').addEventListener('click',()=>{ if(!readInput()) return; weekOff=closedNow()?1:0; setupDraw(); show('draw'); });
+window.addEventListener('hashchange',()=>{ const h=location.hash.slice(1); if(!ME){show('input');return;} if(h==='day'&&selJ!=null){renderDay();show('day');} else if(h==='result'){renderResult();show('result');} else if(h==='album'){renderAlbum();show('album');} else if(h==='draw'){setupDraw();show('draw');} else show('input'); });
+(function init(){ fillSelects(); try{const s=JSON.parse(localStorage.getItem('jaemul2')||'null'); if(s){$('selY').value=s.y;$('selM').value=s.m;$('selD').value=s.d;$('selH').value=s.h;$('bname').value=s.n||'';$('optSolar').checked=s.so;$('optYaja').checked=s.ya;} else return show('input');}catch(e){return show('input');} if(readInput()){ weekOff=closedNow()?1:0; setupDraw(); show('draw'); } else show('input'); })();
+// ===== 판매점 찾기 (카카오 지도, 버튼 누를 때만 불러옴) =====
+const KAKAO_KEY='c64cdb947df0e32e411559bcf0c8cf6f';
+let kakaoReady=null;
+function loadKakao(){ if(kakaoReady) return kakaoReady; kakaoReady=new Promise((res,rej)=>{const sc=document.createElement('script'); sc.src=`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_KEY}&libraries=services&autoload=false`; sc.onload=()=>kakao.maps.load(res); sc.onerror=()=>rej(new Error('지도 불러오기 실패')); document.head.appendChild(sc);}); return kakaoReady; }
+const bearing=(la1,lo1,la2,lo2)=>{const r=Math.PI/180,φ1=la1*r,φ2=la2*r,Δ=(lo2-lo1)*r; const y=Math.sin(Δ)*Math.cos(φ2), x=Math.cos(φ1)*Math.sin(φ2)-Math.sin(φ1)*Math.cos(φ2)*Math.cos(Δ); return ((Math.atan2(y,x)*180/Math.PI)+360)%360;};
+const angDiff=(a,b)=>Math.abs(((a-b)%360+540)%360-180);
+function storeMsg(html){ $('storeList').innerHTML=`<p class="note">${html}</p>`; }
+async function findStores(lat,lng){
+  const x=scoreDay(ME,selJ); const dir=JAESIN[x.s]; const target=DIR_ANG[dir];
+  storeMsg('판매점을 찾고 있습니다. 잠시만요.');
+  try{ await loadKakao(); }catch(e){ storeMsg('지도를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.'); return; }
+  const ps=new kakao.maps.services.Places(); const all=[]; const seen=new Set();
+  const collect=(kw,cLat,cLng,radius)=>new Promise(res=>{ let page=0; ps.keywordSearch(kw,(data,status,pg)=>{ page++; if(status===kakao.maps.services.Status.OK){ data.forEach(d=>{ if(!seen.has(d.id)){seen.add(d.id); all.push(d);} }); if(pg.hasNextPage&&page<3){pg.nextPage(); return;} } res(); },{location:new kakao.maps.LatLng(cLat,cLng),radius}); });
+  // 검색 중심을 그날 방향으로 1km 옮겨서 그쪽 판매점이 먼저 잡히게 합니다
+  const t=target*Math.PI/180, dk=1.0; const cLat=lat+(dk/111.32)*Math.cos(t), cLng=lng+(dk/(111.32*Math.cos(lat*Math.PI/180)))*Math.sin(t);
+  await collect('로또',cLat,cLng,1400); await collect('복권',cLat,cLng,1400);
+  await collect('로또',lat,lng,800);
+  all.forEach(d=>{ const R=6371000,r=Math.PI/180; const dφ=(+d.y-lat)*r, dλ=(+d.x-lng)*r; const a=Math.sin(dφ/2)**2+Math.cos(lat*r)*Math.cos(+d.y*r)*Math.sin(dλ/2)**2; d.distance=Math.round(2*R*Math.asin(Math.sqrt(a))); });
+  const rows=all.filter(d=>d.distance<=2500).map(d=>{const la=+d.y,lo=+d.x; const b=bearing(lat,lng,la,lo); return {d,la,lo,b,dist:+d.distance,hit:angDiff(b,target)<=22.5};});
+  const hits=rows.filter(r=>r.hit).sort((a,b)=>a.dist-b.dist).slice(0,5);
+  const others=rows.filter(r=>!r.hit).sort((a,b)=>a.dist-b.dist).slice(0,2);
+  const dirName=b=>{const names=Object.keys(DIR_ANG); return names.reduce((best,n)=>angDiff(b,DIR_ANG[n])<angDiff(b,DIR_ANG[best])?n:best,names[0]);};
+  const card=(r,off)=>`<div class="store ${off?'off':''}"><div><b>${r.d.place_name}</b><div class="meta">${r.dist>=1000?(r.dist/1000).toFixed(1)+'km':r.dist+'m'} · ${dirName(r.b)}쪽(${Math.round(r.b)}°) · ${r.d.road_address_name||r.d.address_name||''}</div></div><a href="https://map.kakao.com/link/to/${encodeURIComponent(r.d.place_name)},${r.la},${r.lo}" target="_blank" rel="noopener">길찾기</a></div>`;
+  let html='';
+  if(hits.length){ html+=`<p class="note">${dir}쪽(${DEG[dir]})에 있는 판매점 ${hits.length}곳입니다. 가까운 순입니다.</p>`+hits.map(r=>card(r,false)).join(''); }
+  else { html+=`<p class="note">2.5km 안에 ${dir}쪽 판매점이 없습니다. 이럴 때는 가까운 곳에서 사되, 가게 앞에서 ${dir}쪽을 한 번 보고 들어갑니다.</p>`; }
+  if(others.length){ html+=`<p class="note" style="margin-top:6px">방향은 다르지만 가장 가까운 곳</p>`+others.map(r=>card(r,true)).join(''); }
+  if(!all.length) html='<p class="note">근처에서 로또 판매점을 찾지 못했습니다. 주소를 넣어 다시 찾아보세요.</p>';
+  $('storeList').innerHTML=html;
+}
+$('storeGps').addEventListener('click',()=>{
+  if(!navigator.geolocation){ storeMsg('이 기기에서는 위치를 쓸 수 없습니다. 아래에 주소를 넣어 주세요.'); return; }
+  storeMsg('위치 권한을 허용해 주세요…');
+  navigator.geolocation.getCurrentPosition(p=>findStores(p.coords.latitude,p.coords.longitude), err=>storeMsg('위치를 가져오지 못했습니다. 아래에 주소를 넣어 찾을 수 있습니다.'), {enableHighAccuracy:true,timeout:10000,maximumAge:60000});
+});
+$('storeAddrBtn').addEventListener('click',async()=>{
+  const q=$('storeAddr').value.trim(); if(!q){ storeMsg('주소를 넣어 주세요.'); return; }
+  storeMsg('주소를 찾는 중입니다…');
+  try{ await loadKakao(); }catch(e){ storeMsg('지도를 불러오지 못했습니다.'); return; }
+  const gc=new kakao.maps.services.Geocoder();
+  gc.addressSearch(q,(res,status)=>{ if(status===kakao.maps.services.Status.OK&&res[0]) findStores(+res[0].y,+res[0].x); else { const ps=new kakao.maps.services.Places(); ps.keywordSearch(q,(r2,s2)=>{ if(s2===kakao.maps.services.Status.OK&&r2[0]) findStores(+r2[0].y,+r2[0].x); else storeMsg('주소를 찾지 못했습니다. 동 이름까지 넣어 보세요.'); }); } });
+});
+$('storeAddr').addEventListener('keydown',e=>{ if(e.key==='Enter') $('storeAddrBtn').click(); });
+
+</script>
+</body>
+</html>
