@@ -162,7 +162,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--gold);padding:6px 0}
   <div class="panel"><h2>이날 어느 쪽으로 가면 좋은가</h2><div class="compass"><svg id="compassSvg" viewBox="0 0 345 345" role="img" aria-label="재물 방위 나침반"></svg></div><div class="grid" id="legend" style="margin-top:12px"></div></div>
   <div class="panel" id="storePanel">
     <h2 id="storeTitle">이 방향에 있는 로또 판매점</h2>
-    <p class="note" id="storeHint">지금 있는 곳을 기준으로 금색 쪽(이날 로또 사는 방향) 2km 안의 판매점을 찾습니다. 위치는 휴대폰 안에서만 쓰고 저장하지 않습니다.</p>
+    <p class="note" id="storeHint">지금 있는 곳을 기준으로 금색 쪽(이날 로또 사는 방향) 2.5km 안의 판매점을 찾습니다. 위치는 휴대폰 안에서만 쓰고 저장하지 않습니다.</p>
     <div class="grid" style="margin-top:10px">
       <button id="storeGps">📍 내 위치로 찾기</button>
       <div class="row" style="display:flex;gap:8px"><input type="text" id="storeAddr" placeholder="또는 주소 입력 (예: 인천 미추홀구 ○○동)" style="flex:1"><button class="ghost" id="storeAddrBtn" style="width:auto;padding:12px 14px;background:var(--panel2);color:var(--fg);border:1px solid var(--line)">찾기</button></div>
@@ -426,16 +426,20 @@ async function findStores(lat,lng){
   storeMsg('판매점을 찾는 중입니다…');
   try{ await loadKakao(); }catch(e){ storeMsg('지도를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.'); return; }
   const ps=new kakao.maps.services.Places(); const all=[]; const seen=new Set();
-  // 카카오 SDK는 nextPage가 같은 콜백을 다시 부르므로 한 번의 호출로 3페이지까지 모읍니다
-  await new Promise(res=>{ let page=0; ps.keywordSearch('로또',(data,status,pg)=>{ page++; if(status===kakao.maps.services.Status.OK){ data.forEach(d=>{ if(!seen.has(d.id)){seen.add(d.id); all.push(d);} }); if(pg.hasNextPage&&page<3){pg.nextPage(); return;} } res(); },{location:new kakao.maps.LatLng(lat,lng),radius:2000,sort:kakao.maps.services.SortBy.DISTANCE}); });
-  const rows=all.map(d=>{const la=+d.y,lo=+d.x; const b=bearing(lat,lng,la,lo); return {d,la,lo,b,dist:+d.distance,hit:angDiff(b,target)<=22.5};});
+  const collect=(kw,cLat,cLng,radius)=>new Promise(res=>{ let page=0; ps.keywordSearch(kw,(data,status,pg)=>{ page++; if(status===kakao.maps.services.Status.OK){ data.forEach(d=>{ if(!seen.has(d.id)){seen.add(d.id); all.push(d);} }); if(pg.hasNextPage&&page<3){pg.nextPage(); return;} } res(); },{location:new kakao.maps.LatLng(cLat,cLng),radius}); });
+  // 검색 중심을 그날 방향으로 1km 옮겨서 그쪽 판매점이 먼저 잡히게 합니다
+  const t=target*Math.PI/180, dk=1.0; const cLat=lat+(dk/111.32)*Math.cos(t), cLng=lng+(dk/(111.32*Math.cos(lat*Math.PI/180)))*Math.sin(t);
+  await collect('로또',cLat,cLng,1400); await collect('복권',cLat,cLng,1400);
+  await collect('로또',lat,lng,800);
+  all.forEach(d=>{ const R=6371000,r=Math.PI/180; const dφ=(+d.y-lat)*r, dλ=(+d.x-lng)*r; const a=Math.sin(dφ/2)**2+Math.cos(lat*r)*Math.cos(+d.y*r)*Math.sin(dλ/2)**2; d.distance=Math.round(2*R*Math.asin(Math.sqrt(a))); });
+  const rows=all.filter(d=>d.distance<=2500).map(d=>{const la=+d.y,lo=+d.x; const b=bearing(lat,lng,la,lo); return {d,la,lo,b,dist:+d.distance,hit:angDiff(b,target)<=22.5};});
   const hits=rows.filter(r=>r.hit).sort((a,b)=>a.dist-b.dist).slice(0,5);
   const others=rows.filter(r=>!r.hit).sort((a,b)=>a.dist-b.dist).slice(0,2);
   const dirName=b=>{const names=Object.keys(DIR_ANG); return names.reduce((best,n)=>angDiff(b,DIR_ANG[n])<angDiff(b,DIR_ANG[best])?n:best,names[0]);};
   const card=(r,off)=>`<div class="store ${off?'off':''}"><div><b>${r.d.place_name}</b><div class="meta">${r.dist>=1000?(r.dist/1000).toFixed(1)+'km':r.dist+'m'} · ${dirName(r.b)}쪽(${Math.round(r.b)}°) · ${r.d.road_address_name||r.d.address_name||''}</div></div><a href="https://map.kakao.com/link/to/${encodeURIComponent(r.d.place_name)},${r.la},${r.lo}" target="_blank" rel="noopener">길찾기</a></div>`;
   let html='';
   if(hits.length){ html+=`<p class="note">${dir}쪽(${DEG[dir]})에 있는 판매점 ${hits.length}곳입니다. 가까운 순입니다.</p>`+hits.map(r=>card(r,false)).join(''); }
-  else { html+=`<p class="note">2km 안에 ${dir}쪽 판매점이 없습니다. 이럴 때는 가까운 곳에서 사되, 가게 앞에서 ${dir}쪽을 한 번 보고 들어갑니다.</p>`; }
+  else { html+=`<p class="note">2.5km 안에 ${dir}쪽 판매점이 없습니다. 이럴 때는 가까운 곳에서 사되, 가게 앞에서 ${dir}쪽을 한 번 보고 들어갑니다.</p>`; }
   if(others.length){ html+=`<p class="note" style="margin-top:6px">방향은 다르지만 가장 가까운 곳</p>`+others.map(r=>card(r,true)).join(''); }
   if(!all.length) html='<p class="note">근처에서 로또 판매점을 찾지 못했습니다. 주소를 넣어 다시 찾아보세요.</p>';
   $('storeList').innerHTML=html;
