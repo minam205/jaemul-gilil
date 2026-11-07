@@ -214,6 +214,12 @@ details summary{cursor:pointer;font-weight:700;color:var(--seal);padding:8px 0;f
     <p class="note" style="margin-top:10px">먹색 도장은 산 날, 금테는 대길에 산 날, 붉은 "당첨"은 5등 이상 당첨한 날입니다.</p></div>
   <button class="primary" id="shareAlbum" style="margin-top:14px">도장첩 자랑하기</button>
   <div class="panel"><h2>산 날과 결과</h2><div class="grid" id="recList"></div></div>
+  <div class="panel"><h2>도장첩 옮기기</h2>
+    <p class="note">휴대폰을 바꾸거나 인터넷 기록을 지우면 도장이 사라집니다. 미리 "저장 글자"를 카카오톡 '나와의 채팅'에 보내 두세요. 새 휴대폰에서 그 글자를 붙여 넣으면 되살아납니다.</p>
+    <div class="pn"><button id="expBtn">저장 글자 보내기</button><button id="impToggle">불러오기</button></div>
+    <div id="impBox" class="grid" style="margin-top:12px" hidden><textarea id="impText" rows="3" placeholder="저장 글자를 여기 붙여 넣으세요" style="font:inherit;font-size:1rem;padding:12px;border-radius:12px;border:2px solid var(--line);width:100%"></textarea><button class="primary" id="impBtn">이 글자로 되살리기</button></div>
+    <p class="note" id="expNote" style="margin-top:8px"></p>
+  </div>
   <button class="copy" id="recClear" style="margin-top:14px">기록 전부 지우기</button>
   <canvas id="albumCanvas" width="1080" height="1800" hidden></canvas>
 </section>
@@ -501,6 +507,13 @@ function drawAlbumImage(){ const c=$('albumCanvas'); const ctx=c.getContext('2d'
     else { ctx.setLineDash([8,8]); ctx.beginPath(); ctx.arc(0,0,58,0,Math.PI*2); ctx.lineWidth=3; ctx.strokeStyle='#cdbfa3'; ctx.stroke(); ctx.fillStyle='#9a927f'; ctx.font='500 28px "Noto Serif KR",serif'; ctx.fillText(SK[gi%10]+BK[gi%12],0,10); }
     ctx.restore(); }
   ctx.fillStyle='#5b554a'; ctx.font='500 30px "Noto Sans KR",sans-serif'; ctx.fillText('재물 길일 나침반 · minam205.github.io/jaemul-gilil',W/2,H-50); return c; }
+function exportCode(){ const obj={v:1,birth:null,rec:loadRec()}; try{ obj.birth=JSON.parse(localStorage.getItem('jaemul2')||'null'); }catch(e){} const json=JSON.stringify(obj); const b64=btoa(unescape(encodeURIComponent(json))); return 'JAEMUL1.'+b64; }
+function importCode(code){ const m=(code||'').trim().match(/JAEMUL1\.([A-Za-z0-9+/=]+)/); if(!m) return false; try{ const obj=JSON.parse(decodeURIComponent(escape(atob(m[1])))); if(!obj||obj.v!==1) return false; const cur=loadRec(); const inc=obj.rec||{}; Object.keys(inc).forEach(k=>{ if(!cur[k]||(inc[k].at||0)>(cur[k].at||0)) cur[k]=inc[k]; }); saveRec(cur); if(obj.birth&&!localStorage.getItem('jaemul2')) try{ localStorage.setItem('jaemul2',JSON.stringify(obj.birth)); }catch(e){} return Object.keys(inc).length; }catch(e){ return false; } }
+$('expBtn').addEventListener('click',async()=>{ const code=exportCode(); const n=Object.values(loadRec()).filter(r=>r.bought).length; const txt=`[재물 길일 나침반 도장첩 저장 글자] 도장 ${n}개 · ${new Date().toLocaleDateString('ko-KR')}\n이 글을 지우지 말고 두세요. 새 휴대폰에서 도장첩 › 불러오기에 붙여 넣으면 됩니다.\n\n${code}`;
+  if(navigator.share){ try{ await navigator.share({text:txt}); $('expNote').textContent='카카오톡 "나와의 채팅"에 보내 두면 안전합니다.'; return; }catch(e){} }
+  try{ await navigator.clipboard.writeText(txt); $('expNote').textContent='복사했습니다. 카카오톡 "나와의 채팅"에 붙여 넣어 두세요.'; }catch(e){ $('impBox').hidden=false; $('impText').value=txt; $('expNote').textContent='아래 글자를 길게 눌러 복사해 두세요.'; } });
+$('impToggle').addEventListener('click',()=>{ $('impBox').hidden=!$('impBox').hidden; $('impText').value=''; });
+$('impBtn').addEventListener('click',()=>{ const n=importCode($('impText').value); if(n===false){ $('expNote').textContent='저장 글자가 아닙니다. JAEMUL1. 으로 시작하는 글자 전체를 붙여 넣어 주세요.'; return; } $('expNote').textContent=`도장 ${n}개를 되살렸습니다.`; $('impBox').hidden=true; renderRecord(); if(!ME&&readInput()){} });
 $('shareAlbum').addEventListener('click',()=>{ const c=drawAlbumImage(); c.toBlob(async blob=>{ const file=new File([blob],'dojangcheop.png',{type:'image/png'});
   if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){ try{ await navigator.share({files:[file],text:'내 길일 도장첩입니다. 당신 길일도 보세요: https://minam205.github.io/jaemul-gilil/'}); }catch(e){} return; }
   const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='dojangcheop.png'; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},1000); }); });
