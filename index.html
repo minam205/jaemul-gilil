@@ -53,10 +53,12 @@ button.ghost,.copy,.pn button{background:var(--panel);color:var(--fg);border:2px
 details summary{cursor:pointer;font-weight:700;color:var(--seal);padding:8px 0;font-size:1.05rem}
 .sel3{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px}
 /* 붉은 인장 */
-.seal{display:inline-grid;place-items:center;width:64px;height:64px;border-radius:10px;border:3px solid var(--seal);color:var(--seal);font-family:var(--display);font-weight:800;font-size:1.25rem;line-height:1;background:#fff8f0;transform:rotate(-6deg);flex:none}
+.seal{display:inline-grid;place-items:center;align-content:center;gap:2px;width:72px;height:72px;border-radius:10px;border:3px solid var(--seal);color:var(--seal);font-family:var(--display);font-weight:800;font-size:1.15rem;line-height:1;background:#fff8f0;transform:rotate(-6deg);flex:none;text-align:center}
+.seal small{font-family:var(--body);font-size:.8rem;font-weight:700;font-variant-numeric:tabular-nums;opacity:.9}
 .seal.fill{background:var(--seal);color:#fff}
 .seal.p{border-color:var(--muted);color:var(--muted);background:var(--panel)}
-.seal.sm{width:44px;height:44px;font-size:1rem;border-width:2px}
+.seal.sm{width:66px;height:66px;font-size:1.05rem;border-width:2px}
+.seal.word{width:52px;height:52px;font-size:.95rem;border-width:2px;transform:none;border-radius:50%}
 /* 첫 답 카드 */
 .answer{background:var(--panel);border:3px solid var(--seal);border-radius:18px;padding:20px;margin-top:14px;text-align:center}
 .answer .q{font-size:1rem;color:var(--muted);font-weight:700}
@@ -68,7 +70,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--seal);padding:8px 0;f
 .me .edit{width:auto;justify-self:start;min-height:48px;font-size:1rem;padding:0 16px}
 /* 주간 리스트 */
 .week{display:grid;gap:12px;margin-top:14px}
-.dayrow{display:grid;grid-template-columns:76px 1fr 72px;gap:12px;align-items:center;background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:14px 12px;text-align:left;color:var(--fg);width:100%;min-height:92px}
+.dayrow{display:grid;grid-template-columns:72px 1fr 70px;gap:12px;align-items:center;background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:14px 12px;text-align:left;color:var(--fg);width:100%;min-height:92px}
 .dayrow.best{border-color:var(--seal);border-width:3px;background:#fff6ef}
 .dayrow.today{box-shadow:0 0 0 4px var(--gold) inset}
 .dayrow .wd{font-family:var(--display);font-size:1.9rem;font-weight:800;text-align:center;line-height:1}
@@ -80,7 +82,8 @@ details summary{cursor:pointer;font-weight:700;color:var(--seal);padding:8px 0;f
 /* 상세 */
 .hero{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;margin-top:8px}
 .hero .date{font-family:var(--display);font-size:1.6rem;font-weight:800;line-height:1.25}
-.hero .seal{width:84px;height:84px;font-size:1.6rem}
+.hero .seal{width:96px;height:96px;font-size:1.5rem}
+.hero .seal small{font-size:1rem}
 .why{display:grid;gap:10px}
 .why div{font-size:1rem;padding:12px 14px;border-radius:12px;background:var(--panel2);border-left:6px solid var(--line);line-height:1.5}
 .why div.g{border-left-color:var(--good)} .why div.b{border-left-color:var(--bad)}
@@ -266,7 +269,7 @@ function scoreDay(me,J){
 }
 const grade=sc=>sc>=4?['대길','g']:sc>=2?['길','g']:sc>-2?['평','n']:['흉','b'];
 const HANJA={'대길':'大吉','길':'吉','평':'平','흉':'凶'};
-const sealOf=(gl,sm)=>`<span class="seal ${gl==='대길'?'fill':gl==='평'||gl==='흉'?'p':''} ${sm?'sm':''}" aria-label="${gl}">${HANJA[gl]}</span>`;
+const sealOf=(gl,sm,sc)=>`<span class="seal ${gl==='대길'?'fill':gl==='평'||gl==='흉'?'p':''} ${sm?'sm':''}" aria-label="${gl}"><span>${gl}</span>${sc==null?'':`<small>${sc>0?'+':''}${sc}</small>`}</span>`;
 const ONE={'대길':'횡재 기운이 가장 센 날입니다. 로또는 이날 삽니다.','길':'횡재 기운이 받쳐 주는 날입니다. 사도 좋습니다.','평':'보통 날입니다. 더 좋은 날이 있으면 기다립니다.','흉':'횡재 기운이 막힌 날입니다. 이날은 사지 않습니다.'};
 const DEG={'북':'0°','동북':'45°','동':'90°','동남':'135°','남':'180°','서남':'225°','서':'270°','서북':'315°'};
 const ADVICE={
@@ -325,7 +328,7 @@ function renderWeek(){
   const ans=$('answer');
   if(closed){ ans.innerHTML=`<div class="q">${roundOf(a)}회</div><div class="a">이 회차는 판매가 끝났습니다<small>다음 회차(›)를 눌러 보세요.</small></div>`; }
   else if(cand.length){ const x=cand[0]; const [gl]=grade(x.score); const c=fromJdn(x.J);
-    ans.innerHTML=`<div class="q">${roundOf(a)}회 로또, 사는 날은</div><div class="a">${c.m}월 ${c.d}일 ${WD[(x.J+1)%7]}요일${x.J===J_TODAY?' (오늘)':''}<small>${HANJA[gl]} ${gl} · ${JAESIN[x.s]}쪽 판매점에서 한 장</small></div><button data-j="${x.J}">이날 자세히 보기</button>`;
+    ans.innerHTML=`<div class="q">${roundOf(a)}회 로또, 사는 날은</div><div class="a">${c.m}월 ${c.d}일 ${WD[(x.J+1)%7]}요일${x.J===J_TODAY?' (오늘)':''}<small>로또 운 ${gl} (${x.score>0?'+':''}${x.score}점) · ${JAESIN[x.s]}쪽 판매점에서 한 장</small></div><button data-j="${x.J}">이날 자세히 보기</button>`;
     ans.querySelector('button').addEventListener('click',e=>{ selJ=+e.target.dataset.j; renderDay(); show('day'); }); }
   else { let nb=null; for(let i=1;i<60&&!nb;i++){const x=scoreDay(me,satJ+i); if(x.score>=2) nb=x;}
     ans.innerHTML=`<div class="q">${roundOf(a)}회</div><div class="a">이 회차 남은 날에는<br>좋은 날이 없습니다<small>${nb?`다음 좋은 날은 ${fmtK(nb.J)}(${roundOf(nb.J-((nb.J+1)%7))}회)입니다. 이번 회차는 쉬거나, 토요일 저녁 8시 전에 한 장만 사세요.`:'이번 회차는 쉬어도 됩니다.'}</small></div>`; }
@@ -335,7 +338,7 @@ function renderWeek(){
     return `<button class="dayrow ${x.score===best&&best>=2?'best':''} ${x.J===J_TODAY?'today':''}" data-j="${x.J}">
       <div class="wd ${w===0?'sun':w===6?'sat':''}">${WD[w]}<small>${c.m}/${c.d}</small></div>
       <div class="mid"><div class="gz">${x.J===J_TODAY?'오늘 · ':''}${SK[x.s]}${BK[x.b]}일 · ${ANIMAL[x.b]}의 날${w===6?' · 추첨일(저녁 8시 마감)':''}</div><div class="dirs">${ONE[gl]}</div></div>
-      ${sealOf(gl,true)}</button>`;}).join('');
+      ${sealOf(gl,true,x.score)}</button>`;}).join('');
   $('weekList').querySelectorAll('.dayrow').forEach(b=>b.addEventListener('click',()=>{selJ=Number(b.dataset.j); renderDay(); show('day');}));
   // 내 사주 자세히
   const P=[['시간','태어난 시각',me.hour],['날','나',me.day],['달','태어난 달',me.month],['해','태어난 해',me.year]];
@@ -355,15 +358,15 @@ function renderWeek(){
 let lastDay=null;
 function renderDay(){
   const me=ME; const x=scoreDay(me,selJ); lastDay=x; const c=fromJdn(x.J); const [gl,gc]=grade(x.score);
-  $('dayHero').innerHTML=`<div><div class="date">${c.y}년 ${fmtK(x.J)}${x.J===J_TODAY?' (오늘)':''}</div><div class="note">${SK[x.s]}${BK[x.b]}일(${SH[x.s]}${BH[x.b]}) · ${ANIMAL[x.b]}의 날 · 로또 운 <b>${gl}</b> <span style="opacity:.6">(${x.score>0?'+':''}${x.score})</span></div></div>${sealOf(gl,false)}`;
+  $('dayHero').innerHTML=`<div><div class="date">${c.y}년 ${fmtK(x.J)}${x.J===J_TODAY?' (오늘)':''}</div><div class="note">${SK[x.s]}${BK[x.b]}일(${SH[x.s]}${BH[x.b]}) · ${ANIMAL[x.b]}의 날 · 로또 운 <b>${gl}</b></div></div>${sealOf(gl,false,x.score)}`;
   const fixed=EL_DIR[me.jaeEl], jaesin=JAESIN[x.s], huisin=HUISIN[x.s];
   drawCompass(fixed,jaesin,huisin,x);
   $('legend').innerHTML=[
-    ['財',`로또는 ${jaesin}쪽(${DEG[jaesin]}) 판매점에서 삽니다`,`위 나침반에서 금색으로 칠한 칸이 ${jaesin}쪽(윤도 ${DIR_YUN[jaesin]})입니다. 지금 있는 곳에서 그쪽에 있는 판매점을 고릅니다. 없으면 가까운 곳에서 사되, 가게 앞에서 ${jaesin}쪽을 한 번 보고 들어갑니다.`],
-    ['方','방향은 집이나 지금 있는 곳에서 봅니다',`휴대폰 나침반을 켜고 각도를 맞추면 됩니다. 북 0°, 동 90°, 남 180°, 서 270°. 모르겠으면 해 뜨는 쪽이 동쪽입니다.`],
-    ['人',`사람은 ${huisin}쪽(주황 점)에서 만납니다`,`자녀나 친구를 만나 같이 사러 간다면 ${huisin}쪽에서 만나면 좋습니다.`],
-    ['常',`나에게 늘 유리한 쪽은 ${fixed}${fixed==='중앙'?'':'('+DEG[fixed]+', 초록 테두리)'}입니다`,fixed==='중앙'?'집 근처, 늘 다니던 가게가 나에게 맞습니다.':`날짜와 상관없이 늘 그렇습니다. 단골 판매점은 집에서 ${fixed}쪽에 있는 곳으로 정합니다.`],
-  ].map(([ic,t,p])=>`<div class="card"><span class="seal sm">${ic}</span><div><h3>${t}</h3><p>${p}</p></div></div>`).join('');
+    ['돈',`로또는 ${jaesin}쪽(${DEG[jaesin]}) 판매점에서 삽니다`,`위 나침반에서 금색으로 칠한 칸이 ${jaesin}쪽입니다. 지금 있는 곳에서 그쪽에 있는 판매점을 고릅니다. 없으면 가까운 곳에서 사되, 가게 앞에서 ${jaesin}쪽을 한 번 보고 들어갑니다.`],
+    ['방향','방향은 집이나 지금 있는 곳에서 봅니다',`휴대폰 나침반을 켜고 각도를 맞추면 됩니다. 북 0°, 동 90°, 남 180°, 서 270°. 모르겠으면 해 뜨는 쪽이 동쪽입니다.`],
+    ['사람',`사람은 ${huisin}쪽(주황 점)에서 만납니다`,`자녀나 친구를 만나 같이 사러 간다면 ${huisin}쪽에서 만나면 좋습니다.`],
+    ['늘',`나에게 늘 유리한 쪽은 ${fixed}${fixed==='중앙'?'':'('+DEG[fixed]+', 초록 테두리)'}입니다`,fixed==='중앙'?'집 근처, 늘 다니던 가게가 나에게 맞습니다.':`날짜와 상관없이 늘 그렇습니다. 단골 판매점은 집에서 ${fixed}쪽에 있는 곳으로 정합니다.`],
+  ].map(([ic,t,p])=>`<div class="card"><span class="seal word">${ic}</span><div><h3>${t}</h3><p>${p}</p></div></div>`).join('');
   $('todoTitle').textContent=gl==='대길'||gl==='길'?'이날 할 일':'이날 피할 일';
   $('todo').innerHTML=ADVICE[gl].map(p=>`<div class="card one"><p>${p}</p></div>`).join('');
   $('storeTitle').textContent=`${jaesin}쪽에 있는 로또 판매점`; $('storeList').innerHTML='';
@@ -486,7 +489,7 @@ $('wSel').addEventListener('change',e=>{ weekOff=Number(e.target.value); renderW
 $('dPrev').addEventListener('click',()=>{ selJ--; renderDay(); window.scrollTo(0,0); });
 $('dNext').addEventListener('click',()=>{ selJ++; renderDay(); window.scrollTo(0,0); });
 $('copyBtn').addEventListener('click',()=>{ if(!lastDay) return; const x=lastDay; const [gl]=grade(x.score);
-  const txt=`[재물 길일 나침반]\n${fromJdn(x.J).y}년 ${fmtK(x.J)} 로또 운 ${gl}(${HANJA[gl]})\n${ADVICE[gl][0]}\n판매점은 지금 있는 곳에서 ${JAESIN[x.s]}쪽(${DEG[JAESIN[x.s]]}).\nhttps://minam205.github.io/jaemul-gilil/`;
+  const txt=`[재물 길일 나침반]\n${fromJdn(x.J).y}년 ${fmtK(x.J)} 로또 운 ${gl}(${x.score>0?'+':''}${x.score}점)\n${ADVICE[gl][0]}\n판매점은 지금 있는 곳에서 ${JAESIN[x.s]}쪽(${DEG[JAESIN[x.s]]}).\nhttps://minam205.github.io/jaemul-gilil/`;
   const btn=$('copyBtn'); const done=()=>{btn.textContent='복사했습니다. 카카오톡에 붙여 넣으세요'; setTimeout(()=>btn.textContent='자녀에게 보내기',2500);};
   if(navigator.share){ navigator.share({text:txt}).catch(()=>{}); return; }
   try{ navigator.clipboard.writeText(txt).then(done).catch(()=>{btn.textContent=txt;}); }catch(e){ btn.textContent=txt; } });
