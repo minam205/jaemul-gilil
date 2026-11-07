@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0e1322" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f5f1e7" media="(prefers-color-scheme: light)">
-<meta name="description" content="생년월일시로 사주를 세우고, 주 단위로 돈 일 보기 좋은 날과 그날 향할 방향을 알려 드립니다.">
+<meta name="description" content="로또, 아무 날이나 사지 마세요. 내 사주에 돈이 들어오는 날이 따로 있습니다. 이번 회차 로또를 어느 요일에, 어느 방향 가게에서 사야 좋은지 짚어 드립니다.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="재물 길일">
@@ -32,7 +32,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .view[hidden]{display:none}
 .bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:16px 0 12px;display:grid;gap:12px}
 .bar h1{font-family:var(--display);font-weight:800;font-size:1.5rem;margin:0;line-height:1.25;text-wrap:balance}
-.bar .sub{color:var(--muted);font-size:.95rem}
+.bar .sub{color:var(--fg);font-size:1rem;line-height:1.55}
+.bar .hook{font-family:var(--display);font-size:1.35rem;font-weight:800;color:var(--seal);line-height:1.3;margin-top:2px}
 .nav{display:flex;align-items:center;gap:8px}
 .nav select{flex:1;font-size:1rem}
 .iconbtn{background:var(--panel);color:var(--fg);border:2px solid var(--line);border-radius:12px;width:60px;height:60px;font-size:1.6rem;padding:0;flex:none}
@@ -123,7 +124,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--seal);padding:8px 0;f
 
 <!-- 화면 1: 태어난 때 입력 -->
 <section class="view" id="v-input">
-  <div class="bar"><button class="back" id="inputBack" hidden>‹ 회차 목록으로</button><h1>재물 길일 나침반</h1><p class="sub">태어난 날과 시를 넣으면, 이번 회차 로또를 어느 요일에 어느 쪽에서 사면 좋은지 사주로 풀어 드립니다. 입력한 내용은 이 휴대폰 안에만 남습니다.</p></div>
+  <div class="bar"><button class="back" id="inputBack" hidden>‹ 회차 목록으로</button><h1>재물 길일 나침반</h1><p class="hook">로또, 아무 날이나 사지 마세요.</p><p class="sub">내 사주에 돈이 들어오는 날이 따로 있습니다. 태어난 날과 시만 넣으면 이번 회차 로또를 <b>어느 요일에, 어느 방향 가게에서</b> 사야 좋은지 짚어 드립니다.</p><p class="note">입력한 생년월일은 이 휴대폰 밖으로 나가지 않습니다.</p></div>
   <div class="panel grid">
     <label>태어난 해·달·날 (양력)
       <div class="sel3"><select id="selY"></select><select id="selM"></select><select id="selD"></select></div>
