@@ -98,6 +98,11 @@ details summary{cursor:pointer;font-weight:700;color:var(--gold);padding:6px 0}
 .pillar{background:var(--panel2);border-radius:10px;padding:8px 4px;text-align:center;display:grid;gap:3px}
 .pillar .name{font-size:.8rem;color:var(--muted);font-weight:700}
 .pillar .han{font-family:var(--display);font-size:1.8rem;line-height:1.1;font-weight:800}
+.store{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:var(--panel2);border-radius:12px;padding:12px 14px;border-left:6px solid var(--gold)}
+.store.off{border-left-color:var(--line);opacity:.75}
+.store b{font-size:1.05rem}
+.store .meta{font-size:.9rem;color:var(--muted)}
+.store a{display:inline-block;padding:10px 12px;border-radius:10px;background:var(--gold);color:var(--gold-ink);font-weight:700;text-decoration:none;white-space:nowrap}
 .foot{font-size:.85rem;color:var(--muted);border-top:1px solid var(--line);padding-top:14px;margin-top:20px}
 @media (prefers-reduced-motion:no-preference){ .dayrow{transition:transform .12s} .dayrow:active{transform:scale(.985)} }
 </style>
@@ -155,6 +160,15 @@ details summary{cursor:pointer;font-weight:700;color:var(--gold);padding:6px 0}
   <div class="bar"><button class="back" id="toWeek">‹ 주간 목록으로</button></div>
   <div class="hero" id="dayHero"></div>
   <div class="panel"><h2>이날 어느 쪽으로 가면 좋은가</h2><div class="compass"><svg id="compassSvg" viewBox="0 0 345 345" role="img" aria-label="재물 방위 나침반"></svg></div><div class="grid" id="legend" style="margin-top:12px"></div></div>
+  <div class="panel" id="storePanel">
+    <h2 id="storeTitle">이 방향에 있는 로또 판매점</h2>
+    <p class="note" id="storeHint">지금 있는 곳을 기준으로 금색 쪽(이날 로또 사는 방향) 2km 안의 판매점을 찾습니다. 위치는 휴대폰 안에서만 쓰고 저장하지 않습니다.</p>
+    <div class="grid" style="margin-top:10px">
+      <button id="storeGps">📍 내 위치로 찾기</button>
+      <div class="row" style="display:flex;gap:8px"><input type="text" id="storeAddr" placeholder="또는 주소 입력 (예: 인천 미추홀구 ○○동)" style="flex:1"><button class="ghost" id="storeAddrBtn" style="width:auto;padding:12px 14px;background:var(--panel2);color:var(--fg);border:1px solid var(--line)">찾기</button></div>
+    </div>
+    <div id="storeList" class="grid" style="margin-top:12px"></div>
+  </div>
   <div class="panel"><h2 id="whyTitle">이날 할 일과 피할 일</h2><div class="grid" id="todo"></div></div>
   <div class="panel"><h2>이날 로또 운이 이렇게 나온 이유</h2><div class="why" id="dayWhy"></div></div>
   <button class="copy" id="copyBtn" style="margin-top:14px">이날 정보 복사하기</button>
@@ -315,6 +329,7 @@ function renderDay(){
     [jaesin===fixed?'⭐':'↔️',jaesin===fixed?'이날은 돈 일 보는 쪽과 늘 유리한 쪽이 같습니다':'이날 돈 일 보는 쪽과 늘 유리한 쪽이 다릅니다',jaesin===fixed?'한 방향만 챙기면 되는 가장 좋은 날입니다.':`이날 살 판매점은 ${jaesin}쪽, 단골로 정할 판매점은 ${fixed}쪽을 따릅니다.`],
   ].map(([ic,t,p])=>`<div class="card"><div class="ic">${ic}</div><div><h3>${t}</h3><p>${p}</p></div></div>`).join('');
   $('todo').innerHTML=ADVICE[gl].map(([ic,p])=>`<div class="card"><div class="ic">${ic}</div><p>${p}</p></div>`).join('');
+  $('storeTitle').textContent=`${jaesin}쪽에 있는 로또 판매점`; $('storeList').innerHTML='';
   $('dayWhy').innerHTML=x.reasons.length?x.reasons.map(r=>`<div class="${r.w>0?'g':'b'}">${r.txt} <b>(${r.w>0?'+':''}${Math.round(r.w*10)/10})</b></div>`).join(''):'<div>이날은 내 사주와 특별히 맞물리는 것이 없어 재물운이 평범합니다.</div>';
 }
 function drawCompass(fixed,jaesin,huisin,x){
@@ -398,6 +413,47 @@ window.addEventListener('hashchange',()=>{ const h=location.hash.slice(1); if(!M
 })();
 </script>
 <script>
+
+// ===== 판매점 찾기 (카카오 지도, 버튼 누를 때만 불러옴) =====
+const KAKAO_KEY='f832fd4f4c7e7b47cfeb6e51ea36d361';
+let kakaoReady=null;
+function loadKakao(){ if(kakaoReady) return kakaoReady; kakaoReady=new Promise((res,rej)=>{const sc=document.createElement('script'); sc.src=`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_KEY}&libraries=services&autoload=false`; sc.onload=()=>kakao.maps.load(res); sc.onerror=()=>rej(new Error('지도 불러오기 실패')); document.head.appendChild(sc);}); return kakaoReady; }
+const bearing=(la1,lo1,la2,lo2)=>{const r=Math.PI/180,φ1=la1*r,φ2=la2*r,Δ=(lo2-lo1)*r; const y=Math.sin(Δ)*Math.cos(φ2), x=Math.cos(φ1)*Math.sin(φ2)-Math.sin(φ1)*Math.cos(φ2)*Math.cos(Δ); return ((Math.atan2(y,x)*180/Math.PI)+360)%360;};
+const angDiff=(a,b)=>Math.abs(((a-b)%360+540)%360-180);
+function storeMsg(html){ $('storeList').innerHTML=`<p class="note">${html}</p>`; }
+async function findStores(lat,lng){
+  const x=scoreDay(ME,selJ); const dir=JAESIN[x.s]; const target=DIR_ANG[dir];
+  storeMsg('판매점을 찾는 중입니다…');
+  try{ await loadKakao(); }catch(e){ storeMsg('지도를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.'); return; }
+  const ps=new kakao.maps.services.Places(); const all=[]; const seen=new Set();
+  // 카카오 SDK는 nextPage가 같은 콜백을 다시 부르므로 한 번의 호출로 3페이지까지 모읍니다
+  await new Promise(res=>{ let page=0; ps.keywordSearch('로또',(data,status,pg)=>{ page++; if(status===kakao.maps.services.Status.OK){ data.forEach(d=>{ if(!seen.has(d.id)){seen.add(d.id); all.push(d);} }); if(pg.hasNextPage&&page<3){pg.nextPage(); return;} } res(); },{location:new kakao.maps.LatLng(lat,lng),radius:2000,sort:kakao.maps.services.SortBy.DISTANCE}); });
+  const rows=all.map(d=>{const la=+d.y,lo=+d.x; const b=bearing(lat,lng,la,lo); return {d,la,lo,b,dist:+d.distance,hit:angDiff(b,target)<=22.5};});
+  const hits=rows.filter(r=>r.hit).sort((a,b)=>a.dist-b.dist).slice(0,5);
+  const others=rows.filter(r=>!r.hit).sort((a,b)=>a.dist-b.dist).slice(0,2);
+  const dirName=b=>{const names=Object.keys(DIR_ANG); return names.reduce((best,n)=>angDiff(b,DIR_ANG[n])<angDiff(b,DIR_ANG[best])?n:best,names[0]);};
+  const card=(r,off)=>`<div class="store ${off?'off':''}"><div><b>${r.d.place_name}</b><div class="meta">${r.dist>=1000?(r.dist/1000).toFixed(1)+'km':r.dist+'m'} · ${dirName(r.b)}쪽(${Math.round(r.b)}°) · ${r.d.road_address_name||r.d.address_name||''}</div></div><a href="https://map.kakao.com/link/to/${encodeURIComponent(r.d.place_name)},${r.la},${r.lo}" target="_blank" rel="noopener">길찾기</a></div>`;
+  let html='';
+  if(hits.length){ html+=`<p class="note">${dir}쪽(${DEG[dir]})에 있는 판매점 ${hits.length}곳입니다. 가까운 순입니다.</p>`+hits.map(r=>card(r,false)).join(''); }
+  else { html+=`<p class="note">2km 안에 ${dir}쪽 판매점이 없습니다. 이럴 때는 가까운 곳에서 사되, 가게 앞에서 ${dir}쪽을 한 번 보고 들어갑니다.</p>`; }
+  if(others.length){ html+=`<p class="note" style="margin-top:6px">방향은 다르지만 가장 가까운 곳</p>`+others.map(r=>card(r,true)).join(''); }
+  if(!all.length) html='<p class="note">근처에서 로또 판매점을 찾지 못했습니다. 주소를 넣어 다시 찾아보세요.</p>';
+  $('storeList').innerHTML=html;
+}
+$('storeGps').addEventListener('click',()=>{
+  if(!navigator.geolocation){ storeMsg('이 기기에서는 위치를 쓸 수 없습니다. 아래에 주소를 넣어 주세요.'); return; }
+  storeMsg('위치 권한을 허용해 주세요…');
+  navigator.geolocation.getCurrentPosition(p=>findStores(p.coords.latitude,p.coords.longitude), err=>storeMsg('위치를 가져오지 못했습니다. 아래에 주소를 넣어 찾을 수 있습니다.'), {enableHighAccuracy:true,timeout:10000,maximumAge:60000});
+});
+$('storeAddrBtn').addEventListener('click',async()=>{
+  const q=$('storeAddr').value.trim(); if(!q){ storeMsg('주소를 넣어 주세요.'); return; }
+  storeMsg('주소를 찾는 중입니다…');
+  try{ await loadKakao(); }catch(e){ storeMsg('지도를 불러오지 못했습니다.'); return; }
+  const gc=new kakao.maps.services.Geocoder();
+  gc.addressSearch(q,(res,status)=>{ if(status===kakao.maps.services.Status.OK&&res[0]) findStores(+res[0].y,+res[0].x); else { const ps=new kakao.maps.services.Places(); ps.keywordSearch(q,(r2,s2)=>{ if(s2===kakao.maps.services.Status.OK&&r2[0]) findStores(+r2[0].y,+r2[0].x); else storeMsg('주소를 찾지 못했습니다. 동 이름까지 넣어 보세요.'); }); } });
+});
+$('storeAddr').addEventListener('keydown',e=>{ if(e.key==='Enter') $('storeAddrBtn').click(); });
+
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
 let deferredPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;const b=document.getElementById('installBtn');if(b)b.hidden=false;});
