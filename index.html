@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0e1322" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f5f1e7" media="(prefers-color-scheme: light)">
-<meta name="description" content="로또, 아무 날이나 사지 마세요. 내 사주에 돈이 들어오는 날이 따로 있습니다. 이번 회차 로또를 어느 요일에, 어느 방향 가게에서 사야 좋은지 짚어 드립니다.">
+<meta name="description" content="이사도 손 없는 날 가듯, 로또도 날이 있습니다. 내 사주에 돈 들어오는 날이 따로 있습니다. 생년월일만 넣으면 이번 회차 사는 요일과 가게 방향을 짚어 드립니다.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="재물 길일">
@@ -124,7 +124,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--seal);padding:8px 0;f
 
 <!-- 화면 1: 태어난 때 입력 -->
 <section class="view" id="v-input">
-  <div class="bar"><button class="back" id="inputBack" hidden>‹ 회차 목록으로</button><h1>재물 길일 나침반</h1><p class="hook">로또, 아무 날이나 사지 마세요.</p><p class="sub">내 사주에 돈이 들어오는 날이 따로 있습니다. 태어난 날과 시만 넣으면 이번 회차 로또를 <b>어느 요일에, 어느 방향 가게에서</b> 사야 좋은지 짚어 드립니다.</p><p class="note">입력한 생년월일은 이 휴대폰 밖으로 나가지 않습니다.</p></div>
+  <div class="bar"><button class="back" id="inputBack" hidden>‹ 회차 목록으로</button><h1>재물 길일 나침반</h1><p class="hook">이사도 손 없는 날 가듯,<br>로또도 날이 있습니다.</p><p class="sub">내 사주에 돈 들어오는 날이 따로 있습니다. 생년월일만 넣으면 이번 회차 사는 <b>요일</b>과 가게 <b>방향</b>을 짚어 드립니다.</p><p class="note">생년월일은 이 휴대폰 밖으로 나가지 않습니다.</p></div>
   <div class="panel grid">
     <label>태어난 해·달·날 (양력)
       <div class="sel3"><select id="selY"></select><select id="selM"></select><select id="selD"></select></div>
@@ -132,7 +132,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--seal);padding:8px 0;f
     <label>태어난 시 <select id="selH"></select></label>
     <p class="note">시를 모르면 "모름"을 고르세요. 시로 보는 부분만 빠지고 나머지는 그대로입니다.</p>
     <label>이름 (안 써도 됩니다)<input type="text" id="bname" value="" placeholder="예: 홍길동"></label>
-    <button id="run">이번 회차 로또 날 보기</button>
+    <button id="run">내 길일 보기</button>
     <details><summary>자세한 설정</summary>
       <div class="grid" style="margin-top:8px">
         <label class="chk"><input type="checkbox" id="optYaja" checked><span>밤 11시 이후에 태어났으면 그날을 생일로 봅니다. (사주에서는 밤 11시부터 다음 날로 치기도 합니다)</span></label>
@@ -493,7 +493,7 @@ $('wSel').addEventListener('change',e=>{ weekOff=Number(e.target.value); renderW
 $('dPrev').addEventListener('click',()=>{ selJ--; renderDay(); window.scrollTo(0,0); });
 $('dNext').addEventListener('click',()=>{ selJ++; renderDay(); window.scrollTo(0,0); });
 $('copyBtn').addEventListener('click',()=>{ if(!lastDay) return; const x=lastDay; const [gl]=grade(x.score);
-  const txt=`[재물 길일 나침반]\n${fromJdn(x.J).y}년 ${fmtK(x.J)} 로또 운 ${gl}(${x.score>0?'+':''}${x.score}점)\n${ADVICE[gl][0]}\n판매점은 지금 있는 곳에서 ${JAESIN[x.s]}쪽(${DEG[JAESIN[x.s]]}).\nhttps://minam205.github.io/jaemul-gilil/`;
+  const txt=`[재물 길일 나침반] 로또도 날이 있습니다\n${fromJdn(x.J).y}년 ${fmtK(x.J)} 로또 운 ${gl}(${x.score>0?'+':''}${x.score}점)\n${ADVICE[gl][0]}\n판매점은 지금 있는 곳에서 ${JAESIN[x.s]}쪽(${DEG[JAESIN[x.s]]}).\nhttps://minam205.github.io/jaemul-gilil/`;
   const btn=$('copyBtn'); const done=()=>{btn.textContent='복사했습니다. 카카오톡에 붙여 넣으세요'; setTimeout(()=>btn.textContent='자녀에게 보내기',2500);};
   if(navigator.share){ navigator.share({text:txt}).catch(()=>{}); return; }
   try{ navigator.clipboard.writeText(txt).then(done).catch(()=>{btn.textContent=txt;}); }catch(e){ btn.textContent=txt; } });
