@@ -16,105 +16,102 @@
 <title>재물 길일 나침반</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;800&family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
-/* 레이아웃: 휴대폰 한 열. 화면 3개(입력 → 주간 리스트 → 날짜 상세)를 해시로 전환. 밤하늘 쪽빛 바탕에 금색 강조. */
+/* 레이아웃: 휴대폰 한 열, 화면 4개. 60~70대 기준: 한지 바탕·먹색 글자 단일 테마, 본문 20px, 버튼 60px, 붉은 인장으로 등급 표시. */
 :root{
-  --bg:#0e1322; --panel:#182038; --panel2:#1f2a48; --fg:#f4f0e6; --muted:#c3bdab; --line:#34406a;
-  --gold:#f0c251; --gold-ink:#1b1402; --good:#4fd1a8; --bad:#ff6b6b; --warn:#ffb454; --water:#4f8df5;
+  --bg:#f5efe1; --panel:#fffaf0; --panel2:#efe6d2; --fg:#1d1a16; --muted:#5b554a; --line:#cdbfa3;
+  --gold:#b8860b; --gold-ink:#fffaf0; --seal:#b3261e; --seal-ink:#fff; --good:#1f7a4d; --bad:#b3261e; --warn:#b4600a; --water:#2a4f8f;
   --display:'Noto Serif KR',"Apple SD Gothic Neo",serif; --body:'Noto Sans KR',"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-  color-scheme:dark;
-}
-@media (prefers-color-scheme: light){ :root:not([data-theme="dark"]){
-  --bg:#f5f1e7; --panel:#ffffff; --panel2:#efe9d9; --fg:#1b1f30; --muted:#5a5f72; --line:#d6cfbc;
-  --gold:#b07d0c; --gold-ink:#ffffff; --good:#13835f; --bad:#c42f2f; --warn:#b4600a; --water:#2a63d6; color-scheme:light;
-}}
-:root[data-theme="light"]{
-  --bg:#f5f1e7; --panel:#ffffff; --panel2:#efe9d9; --fg:#1b1f30; --muted:#5a5f72; --line:#d6cfbc;
-  --gold:#b07d0c; --gold-ink:#ffffff; --good:#13835f; --bad:#c42f2f; --warn:#b4600a; --water:#2a63d6; color-scheme:light;
+  color-scheme:light;
 }
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.5;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+html{font-size:20px}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:1rem;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 60px}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
-.app{max-width:560px;margin:0 auto}
+.app{max-width:600px;margin:0 auto}
 .view[hidden]{display:none}
-.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:14px 0 10px;display:grid;gap:10px}
-.bar h1{font-family:var(--display);font-weight:800;font-size:1.45rem;margin:0;line-height:1.2;text-wrap:balance}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:16px 0 12px;display:grid;gap:12px}
+.bar h1{font-family:var(--display);font-weight:800;font-size:1.5rem;margin:0;line-height:1.25;text-wrap:balance}
 .bar .sub{color:var(--muted);font-size:.95rem}
 .nav{display:flex;align-items:center;gap:8px}
-.nav select{flex:1}
-.iconbtn{background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:10px;width:46px;height:46px;font-size:1.3rem;padding:0;flex:none}
-.back{background:transparent;color:var(--gold);border:0;font-weight:700;font-size:1.05rem;padding:6px 0;text-align:left}
-h2{font-family:var(--display);font-weight:800;font-size:1.25rem;margin:0 0 10px;text-wrap:balance}
-h3{font-size:1.05rem;margin:0 0 4px;font-weight:700}
+.nav select{flex:1;font-size:1rem}
+.iconbtn{background:var(--panel);color:var(--fg);border:2px solid var(--line);border-radius:12px;width:60px;height:60px;font-size:1.6rem;padding:0;flex:none}
+.back{background:transparent;color:var(--seal);border:0;font-weight:700;font-size:1.05rem;padding:8px 0;text-align:left;width:auto}
+h2{font-family:var(--display);font-weight:800;font-size:1.3rem;margin:0 0 12px;text-wrap:balance}
+h3{font-size:1.1rem;margin:0 0 6px;font-weight:700;line-height:1.4}
 p{margin:0}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:14px}
-.grid{display:grid;gap:12px}
-label{display:grid;gap:6px;font-weight:700;font-size:.95rem}
-input,select{font:inherit;font-size:1.1rem;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);min-width:0;width:100%}
-input:focus,select:focus,button:focus-visible{outline:3px solid var(--gold);outline-offset:1px}
-button{font:inherit;font-weight:700;font-size:1.1rem;padding:14px 20px;border-radius:12px;border:0;cursor:pointer;background:var(--gold);color:var(--gold-ink);width:100%}
-.chk{display:flex;gap:10px;align-items:center;font-weight:500;font-size:.95rem}
-.chk input{width:24px;height:24px}
-.note{font-size:.9rem;color:var(--muted)}
-details summary{cursor:pointer;font-weight:700;color:var(--gold);padding:6px 0}
-/* 내 요약 띠 */
-.me{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
-.me .big{font-weight:700;font-size:1.05rem}
-.me .edit{background:transparent;border:1px solid var(--line);color:var(--fg);width:auto;padding:8px 12px;font-size:.9rem}
-/* 가장 가까운 길일 */
-.next{display:grid;grid-template-columns:48px 1fr;gap:12px;align-items:center;background:var(--gold);color:var(--gold-ink);border-radius:14px;padding:14px;margin-top:12px;text-align:left;border:0}
-.next .ic{font-size:2rem;line-height:1}
-.next b{font-size:1.15rem}
-.next small{display:block;font-size:.92rem;opacity:.85}
+.panel{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:18px;margin-top:16px}
+.grid{display:grid;gap:14px}
+label{display:grid;gap:8px;font-weight:700;font-size:1rem}
+input,select{font:inherit;font-size:1.1rem;padding:14px;border-radius:12px;border:2px solid var(--line);background:#fff;color:var(--fg);min-width:0;width:100%;min-height:60px}
+input:focus,select:focus,button:focus-visible{outline:4px solid var(--gold);outline-offset:2px}
+button{font:inherit;font-weight:700;font-size:1.15rem;padding:0 20px;min-height:60px;border-radius:14px;border:0;cursor:pointer;background:var(--seal);color:var(--seal-ink);width:100%}
+button.ghost,.copy,.pn button{background:var(--panel);color:var(--fg);border:2px solid var(--line)}
+.chk{display:flex;gap:12px;align-items:flex-start;font-weight:500;font-size:.95rem}
+.chk input{width:28px;height:28px;min-height:0;flex:none;margin-top:4px}
+.note{font-size:.92rem;color:var(--muted);line-height:1.55}
+details summary{cursor:pointer;font-weight:700;color:var(--seal);padding:8px 0;font-size:1.05rem}
+.sel3{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px}
+/* 붉은 인장 */
+.seal{display:inline-grid;place-items:center;width:64px;height:64px;border-radius:10px;border:3px solid var(--seal);color:var(--seal);font-family:var(--display);font-weight:800;font-size:1.25rem;line-height:1;background:#fff8f0;transform:rotate(-6deg);flex:none}
+.seal.fill{background:var(--seal);color:#fff}
+.seal.p{border-color:var(--muted);color:var(--muted);background:var(--panel)}
+.seal.sm{width:44px;height:44px;font-size:1rem;border-width:2px}
+/* 첫 답 카드 */
+.answer{background:var(--panel);border:3px solid var(--seal);border-radius:18px;padding:20px;margin-top:14px;text-align:center}
+.answer .q{font-size:1rem;color:var(--muted);font-weight:700}
+.answer .a{font-family:var(--display);font-size:1.9rem;font-weight:800;line-height:1.25;margin:6px 0 8px;color:var(--seal);text-wrap:balance}
+.answer .a small{display:block;font-family:var(--body);font-size:1rem;color:var(--fg);font-weight:500;margin-top:6px}
+.answer button{margin-top:14px}
+.me{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:14px;display:grid;gap:8px}
+.me .big{font-weight:700;font-size:1.05rem;line-height:1.5}
+.me .edit{width:auto;justify-self:start;min-height:48px;font-size:1rem;padding:0 16px}
 /* 주간 리스트 */
-.week{display:grid;gap:10px;margin-top:12px}
-.dayrow{display:grid;grid-template-columns:64px 1fr 80px;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:left;color:var(--fg);width:100%;border-left:6px solid var(--line)}
-.dayrow.best{border-left-color:var(--gold)}
-.dayrow.today{outline:2px solid var(--gold)}
-.dayrow .wd{font-family:var(--display);font-size:1.5rem;font-weight:800;text-align:center;line-height:1.1}
-.dayrow .wd small{display:block;font-family:var(--body);font-size:.85rem;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
-.dayrow .wd.sun{color:var(--bad)} .dayrow .wd.sat{color:var(--water)}
-.dayrow .mid{min-width:0;display:grid;gap:3px}
-.dayrow .gz{font-weight:700;font-size:1rem}
-.dayrow .dirs{font-size:.95rem;color:var(--muted)}
-.dayrow .dirs b{color:var(--gold);font-size:1.1rem}
-.dayrow .sc{font-family:var(--display);font-size:1.7rem;font-weight:800;text-align:right;font-variant-numeric:tabular-nums;line-height:1}
-.dayrow .sc small{display:block;font-family:var(--body);font-size:.78rem;font-weight:700;margin-top:4px}
-.sc.g{color:var(--good)} .sc.b{color:var(--bad)} .sc.n{color:var(--muted)}
+.week{display:grid;gap:12px;margin-top:14px}
+.dayrow{display:grid;grid-template-columns:76px 1fr 72px;gap:12px;align-items:center;background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:14px 12px;text-align:left;color:var(--fg);width:100%;min-height:92px}
+.dayrow.best{border-color:var(--seal);border-width:3px;background:#fff6ef}
+.dayrow.today{box-shadow:0 0 0 4px var(--gold) inset}
+.dayrow .wd{font-family:var(--display);font-size:1.9rem;font-weight:800;text-align:center;line-height:1}
+.dayrow .wd small{display:block;font-family:var(--body);font-size:.9rem;font-weight:700;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums}
+.dayrow .wd.sun{color:var(--seal)} .dayrow .wd.sat{color:var(--water)}
+.dayrow .mid{min-width:0;display:grid;gap:4px}
+.dayrow .gz{font-weight:700;font-size:1.05rem}
+.dayrow .dirs{font-size:.95rem;color:var(--muted);line-height:1.45}
 /* 상세 */
-.hero{display:grid;gap:6px;margin-top:6px}
-.hero .date{font-family:var(--display);font-size:1.6rem;font-weight:800;line-height:1.2}
-.hero .score{font-family:var(--display);font-size:3rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
-.why{display:grid;gap:8px}
-.why div{font-size:.98rem;padding:10px 12px;border-radius:10px;background:var(--panel2);border-left:5px solid var(--line)}
+.hero{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;margin-top:8px}
+.hero .date{font-family:var(--display);font-size:1.6rem;font-weight:800;line-height:1.25}
+.hero .seal{width:84px;height:84px;font-size:1.6rem}
+.why{display:grid;gap:10px}
+.why div{font-size:1rem;padding:12px 14px;border-radius:12px;background:var(--panel2);border-left:6px solid var(--line);line-height:1.5}
 .why div.g{border-left-color:var(--good)} .why div.b{border-left-color:var(--bad)}
-.compass svg{width:100%;max-width:360px;height:auto;display:block;margin:0 auto}
-.card{background:var(--panel2);border-radius:12px;padding:14px;display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:start}
-.card .ic{font-size:1.8rem;line-height:1}
-.card p{font-size:.98rem}
+.compass svg{width:100%;max-width:380px;height:auto;display:block;margin:0 auto}
+.card{background:var(--panel2);border-radius:14px;padding:16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.card p{font-size:1rem;line-height:1.55}
+.card.one{grid-template-columns:1fr}
 .pn{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
-.pn button,.copy{background:var(--panel2);color:var(--fg);border:1px solid var(--line);font-size:1rem;padding:12px}
+.pn button{font-size:1.05rem;padding:0 8px}
+.primary{background:var(--seal);color:#fff;border:0}
 .pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
-.pillar{background:var(--panel2);border-radius:10px;padding:8px 4px;text-align:center;display:grid;gap:3px}
-.pillar .name{font-size:.8rem;color:var(--muted);font-weight:700}
-.pillar .han{font-family:var(--display);font-size:1.8rem;line-height:1.1;font-weight:800}
-.store{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:var(--panel2);border-radius:12px;padding:12px 14px;border-left:6px solid var(--gold)}
-.store.off{border-left-color:var(--line);opacity:.75}
-.store b{font-size:1.05rem}
-.store .meta{font-size:.9rem;color:var(--muted)}
-.store a{display:inline-block;padding:10px 12px;border-radius:10px;background:var(--gold);color:var(--gold-ink);font-weight:700;text-decoration:none;white-space:nowrap}
-.rec{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:var(--panel2);border-radius:12px;padding:12px 14px}
-.rec b{font-size:1.05rem}.rec .meta{font-size:.9rem;color:var(--muted)}
-.rec .res{font-weight:700;padding:6px 10px;border-radius:8px;background:var(--panel);border:1px solid var(--line);white-space:nowrap}
+.pillar{background:var(--panel2);border-radius:12px;padding:10px 4px;text-align:center;display:grid;gap:4px}
+.pillar .name{font-size:.85rem;color:var(--muted);font-weight:700}
+.pillar .han{font-family:var(--display);font-size:2rem;line-height:1.1;font-weight:800}
+.store{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;background:var(--panel2);border-radius:14px;padding:14px 16px;border-left:8px solid var(--seal)}
+.store.off{border-left-color:var(--line);opacity:.8}
+.store b{font-size:1.1rem}
+.store .meta{font-size:.95rem;color:var(--muted);line-height:1.45}
+.store a{display:inline-grid;place-items:center;min-height:56px;padding:0 16px;border-radius:12px;background:var(--seal);color:#fff;font-weight:700;text-decoration:none;white-space:nowrap;font-size:1.05rem}
+.rec{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;background:var(--panel2);border-radius:14px;padding:14px 16px}
+.rec b{font-size:1.05rem}.rec .meta{font-size:.95rem;color:var(--muted)}
+.rec .res{font-weight:700;padding:10px 12px;border-radius:10px;background:var(--panel);border:2px solid var(--line);white-space:nowrap}
 .rec .res.win{border-color:var(--good);color:var(--good)}
 .stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.stat div{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 8px;text-align:center}
-.stat b{display:block;font-family:var(--display);font-size:1.7rem;font-variant-numeric:tabular-nums}
-.stat span{font-size:.85rem;color:var(--muted)}
-.choice{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
-.choice button{padding:12px 4px;font-size:.95rem;background:var(--panel2);color:var(--fg);border:1px solid var(--line)}
-.foot{font-size:.85rem;color:var(--muted);border-top:1px solid var(--line);padding-top:14px;margin-top:20px}
-@media (prefers-reduced-motion:no-preference){ .dayrow{transition:transform .12s} .dayrow:active{transform:scale(.985)} }
+.stat div{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:14px 6px;text-align:center}
+.stat b{display:block;font-family:var(--display);font-size:1.9rem;font-variant-numeric:tabular-nums}
+.stat span{font-size:.9rem;color:var(--muted)}
+.choice{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+.choice button{background:var(--panel2);color:var(--fg);border:2px solid var(--line)}
+.foot{font-size:.9rem;color:var(--muted);border-top:2px solid var(--line);padding-top:16px;margin-top:24px;line-height:1.55}
+@media (max-width:380px){ html{font-size:18px} .dayrow{grid-template-columns:64px 1fr 60px} }
 </style>
 </head>
 <body>
@@ -123,17 +120,20 @@ details summary{cursor:pointer;font-weight:700;color:var(--gold);padding:6px 0}
 
 <!-- 화면 1: 태어난 때 입력 -->
 <section class="view" id="v-input">
-  <div class="bar"><h1>재물 길일 나침반</h1><p class="sub">태어난 때를 넣으면 내 사주로 이번 회차 로또를 어느 요일에, 어느 쪽 판매점에서 사면 좋은지 알려 드립니다. 입력은 이 기기에만 저장됩니다.</p></div>
+  <div class="bar"><h1>재물 길일 나침반</h1><p class="sub">태어난 날과 시를 넣으면, 이번 회차 로또를 어느 요일에 어느 쪽에서 사면 좋은지 사주로 풀어 드립니다. 입력한 내용은 이 휴대폰 안에만 남습니다.</p></div>
   <div class="panel grid">
-    <label>생년월일(양력)<input type="date" id="bdate" value="1979-11-18"></label>
-    <label>태어난 시각<input type="time" id="btime" value="23:55"></label>
-    <label>이름(표시용, 안 써도 됨)<input type="text" id="bname" value="" placeholder="예: 홍길동"></label>
-    <label class="chk"><input type="checkbox" id="optYaja" checked>밤 11시 이후에 태어났으면 그날을 생일로 계산합니다(사주에서는 밤 11시부터 다음 날로 치기도 합니다)</label>
+    <label>태어난 해·달·날 (양력)
+      <div class="sel3"><select id="selY"></select><select id="selM"></select><select id="selD"></select></div>
+    </label>
+    <label>태어난 시 <select id="selH"></select></label>
+    <p class="note">시를 모르면 "모름"을 고르세요. 시로 보는 부분만 빠지고 나머지는 그대로입니다.</p>
+    <label>이름 (안 써도 됩니다)<input type="text" id="bname" value="" placeholder="예: 홍길동"></label>
     <button id="run">이번 회차 로또 날 보기</button>
     <details><summary>자세한 설정</summary>
       <div class="grid" style="margin-top:8px">
-        <label class="chk"><input type="checkbox" id="optSolar" checked>서울의 실제 해 시각에 맞춰 30분 당겨 계산합니다(권장)</label>
-        <p class="note">태어난 시각을 모르면 12:00으로 두세요. 시각으로 보는 부분만 빠지고 나머지는 그대로입니다.<br>1987·1988년 5~10월생은 서머타임 때라 1시간을 빼고 넣으세요.</p>
+        <label class="chk"><input type="checkbox" id="optYaja" checked><span>밤 11시 이후에 태어났으면 그날을 생일로 봅니다. (사주에서는 밤 11시부터 다음 날로 치기도 합니다)</span></label>
+        <label class="chk"><input type="checkbox" id="optSolar" checked><span>서울의 실제 해 시각에 맞춰 30분 당겨 계산합니다. (권장)</span></label>
+        <p class="note">1987·1988년 5~10월에 태어난 분은 서머타임 때라 한 시간 이른 시로 고르세요.</p>
       </div>
     </details>
   </div>
@@ -144,53 +144,53 @@ details summary{cursor:pointer;font-weight:700;color:var(--gold);padding:6px 0}
   <div class="bar">
     <h1 id="weekTitle">이번 회차 로또, 어느 날 살까</h1>
     <div class="nav">
-      <button class="iconbtn" id="wPrev" aria-label="지난주">‹</button>
-      <select id="wSel" aria-label="주 선택"></select>
-      <button class="iconbtn" id="wNext" aria-label="다음주">›</button>
+      <button class="iconbtn" id="wPrev" aria-label="지난 회차">‹</button>
+      <select id="wSel" aria-label="회차 선택"></select>
+      <button class="iconbtn" id="wNext" aria-label="다음 회차">›</button>
     </div>
   </div>
-  <div class="me">
-    <div><div class="big" id="meLine"></div><div class="note" id="meSub"></div></div>
-    <button class="edit" id="toInput">입력 바꾸기</button>
-  </div>
+  <div class="answer" id="answer"></div>
   <div class="panel" id="askResult" hidden></div>
-  <button class="next" id="nextBest"></button>
   <div class="week" id="weekList"></div>
-  <button id="installBtn" class="copy" style="margin-top:12px" hidden>📲 홈 화면에 앱으로 설치하기</button>
-  <p class="note" id="iosHint" style="margin-top:10px" hidden>아이폰: 공유 버튼 → "홈 화면에 추가"를 누르면 앱처럼 쓸 수 있습니다.</p>
-  <p class="note" style="margin-top:10px">날짜를 누르면 그날 횡재 기운의 이유와 어느 쪽 판매점으로 갈지가 나옵니다.</p>
-  <details class="panel"><summary>내 사주 자세히 보기</summary><p class="note" style="margin:6px 0 0">아래 한자는 읽을 줄 몰라도 됩니다. 그 밑의 설명만 보면 됩니다.</p>
+  <p class="note" style="margin-top:12px">날짜를 누르면 그날 어느 쪽 판매점으로 갈지와 그 까닭이 나옵니다.</p>
+  <div class="me">
+    <div class="big" id="meLine"></div><div class="note" id="meSub"></div>
+    <button class="edit ghost" id="toInput">생년월일 다시 넣기</button>
+  </div>
+  <details class="panel"><summary>내 사주 자세히 보기</summary>
     <div class="pillars" id="pillars"></div>
     <div class="grid" id="diag" style="margin-top:12px"></div>
   </details>
-  <div class="pn" style="margin-top:12px"><button id="toRecord">📒 내 기록</button><button id="icsWeek">📅 이번 회차 길일 캘린더에</button></div>
-  <p class="foot">사주 길일은 당첨 확률을 바꾸지 않습니다. 이 앱은 기분 좋게 사는 날과 방향을 고르는 재미로만 쓰세요. 로또는 회차당 한 장(5천 원)이면 충분하고, 과하게 느껴지면 한국도박문제예방치유원 1336으로 상담할 수 있습니다.</p>
+  <div class="pn" style="margin-top:14px"><button id="toRecord">내 기록</button><button id="icsWeek">달력에 넣기</button></div>
+  <button id="installBtn" class="copy" style="margin-top:12px" hidden>휴대폰 바탕화면에 앱으로 설치</button>
+  <p class="note" id="iosHint" style="margin-top:10px" hidden>아이폰은 아래 공유 버튼 → "홈 화면에 추가"를 누르면 앱처럼 쓸 수 있습니다.</p>
+  <p class="foot">사주 길일은 당첨 확률을 바꾸지 않습니다. 기분 좋게 사는 날과 방향을 고르는 재미로만 쓰세요. 로또는 회차당 한 장(5천 원)이면 충분하고, 지나치다 싶으면 한국도박문제예방치유원 ☎1336에 전화하면 됩니다.</p>
 </section>
 
 <!-- 화면 3: 날짜 상세 -->
 <section class="view" id="v-day" hidden>
-  <div class="bar"><button class="back" id="toWeek">‹ 주간 목록으로</button></div>
+  <div class="bar"><button class="back" id="toWeek">‹ 회차 목록으로</button></div>
   <div class="hero" id="dayHero"></div>
-  <div class="panel"><h2>이날 어느 쪽으로 가면 좋은가</h2><div class="compass"><svg id="compassSvg" viewBox="0 0 345 345" role="img" aria-label="재물 방위 나침반"></svg></div><div class="grid" id="legend" style="margin-top:12px"></div></div>
+  <div class="panel"><h2 id="todoTitle">이날 할 일</h2><div class="grid" id="todo"></div></div>
+  <div class="panel"><h2>이날 어느 쪽으로 가면 좋은가</h2><div class="compass"><svg id="compassSvg" viewBox="0 0 345 345" role="img" aria-label="재물 방위 나침반"></svg></div><div class="grid" id="legend" style="margin-top:14px"></div></div>
   <div class="panel" id="storePanel">
     <h2 id="storeTitle">이 방향에 있는 로또 판매점</h2>
-    <p class="note" id="storeHint">지금 있는 곳을 기준으로 금색 쪽(이날 로또 사는 방향) 2.5km 안의 판매점을 찾습니다. 위치는 휴대폰 안에서만 쓰고 저장하지 않습니다.</p>
-    <div class="grid" style="margin-top:10px">
-      <button id="storeGps">📍 내 위치로 찾기</button>
-      <div class="row" style="display:flex;gap:8px"><input type="text" id="storeAddr" placeholder="또는 주소 입력 (예: 인천 미추홀구 ○○동)" style="flex:1"><button class="ghost" id="storeAddrBtn" style="width:auto;padding:12px 14px;background:var(--panel2);color:var(--fg);border:1px solid var(--line)">찾기</button></div>
+    <p class="note" id="storeHint">지금 있는 곳에서 그 방향 2.5km 안의 판매점을 찾습니다. 위치는 휴대폰 안에서만 쓰고 저장하지 않습니다.</p>
+    <div class="grid" style="margin-top:12px">
+      <button id="storeGps">내 위치로 판매점 찾기</button>
+      <div style="display:flex;gap:8px"><input type="text" id="storeAddr" placeholder="또는 동네 이름 (예: 인천 구월동)" style="flex:1"><button class="ghost" id="storeAddrBtn" style="width:auto;padding:0 18px">찾기</button></div>
     </div>
     <div id="storeList" class="grid" style="margin-top:12px"></div>
   </div>
-  <div class="panel"><h2 id="whyTitle">이날 할 일과 피할 일</h2><div class="grid" id="todo"></div></div>
-  <div class="panel"><h2>이날 로또 운이 이렇게 나온 이유</h2><div class="why" id="dayWhy"></div></div>
-  <div class="pn" style="margin-top:14px"><button id="boughtBtn" style="background:var(--gold);color:var(--gold-ink);border:0">🎫 이날 샀어요</button><button id="icsDay">📅 캘린더에 넣기</button></div>
-  <button class="copy" id="copyBtn" style="margin-top:10px">이날 정보 복사하기</button>
+  <div class="panel"><h2>이날 운이 이렇게 나온 까닭</h2><div class="why" id="dayWhy"></div></div>
+  <button id="boughtBtn" class="primary" style="margin-top:16px">이날 샀어요</button>
+  <div class="pn"><button id="copyBtn">자녀에게 보내기</button><button id="icsDay">달력에 넣기</button></div>
   <div class="pn"><button id="dPrev">‹ 전날</button><button id="dNext">다음날 ›</button></div>
 </section>
 
 <!-- 화면 4: 내 기록 -->
 <section class="view" id="v-record" hidden>
-  <div class="bar"><button class="back" id="recToWeek">‹ 주간 목록으로</button><h1>내 로또 기록</h1><p class="sub">이 기기에만 저장됩니다. 기기를 바꾸면 사라집니다.</p></div>
+  <div class="bar"><button class="back" id="recToWeek">‹ 회차 목록으로</button><h1>내 로또 기록</h1><p class="sub">이 휴대폰 안에만 남습니다. 휴대폰을 바꾸면 사라집니다.</p></div>
   <div class="grid" id="recSummary" style="margin-top:12px"></div>
   <div class="panel"><h2>회차별 기록</h2><div class="grid" id="recList"></div></div>
   <button class="copy" id="recClear" style="margin-top:14px">기록 전부 지우기</button>
@@ -264,14 +264,16 @@ function scoreDay(me,J){
   if(me.weak){const r=relOf(me.day.s,s); if(r===0||r===4) add(`내 힘을 보태 주는 날이라 돈을 지키기 좋습니다.`,1);}
   return {J,s,b,score:Math.round(sc*10)/10,reasons};
 }
-const grade=sc=>sc>=4?['매우 좋음','g']:sc>=2?['좋음','g']:sc>-2?['보통','n']:['나쁨','b'];
-const ONE={'매우 좋음':'횡재 기운이 가장 강한 날. 로또는 이날 삽니다','좋음':'횡재 기운이 받쳐 주는 날. 사도 괜찮습니다','보통':'횡재 기운이 평범한 날. 더 좋은 날이 있으면 기다립니다','나쁨':'횡재 기운이 막히는 날. 이날은 사지 않습니다'};
+const grade=sc=>sc>=4?['대길','g']:sc>=2?['길','g']:sc>-2?['평','n']:['흉','b'];
+const HANJA={'대길':'大吉','길':'吉','평':'平','흉':'凶'};
+const sealOf=(gl,sm)=>`<span class="seal ${gl==='대길'?'fill':gl==='평'||gl==='흉'?'p':''} ${sm?'sm':''}" aria-label="${gl}">${HANJA[gl]}</span>`;
+const ONE={'대길':'횡재 기운이 가장 센 날입니다. 로또는 이날 삽니다.','길':'횡재 기운이 받쳐 주는 날입니다. 사도 좋습니다.','평':'보통 날입니다. 더 좋은 날이 있으면 기다립니다.','흉':'횡재 기운이 막힌 날입니다. 이날은 사지 않습니다.'};
 const DEG={'북':'0°','동북':'45°','동':'90°','동남':'135°','남':'180°','서남':'225°','서':'270°','서북':'315°'};
 const ADVICE={
-  '매우 좋음':[['🎫','이번 회차 로또는 이날 삽니다. 한 장(5천 원)이면 충분합니다.'],['🧭','판매점은 지금 있는 곳에서 위 나침반의 금색 쪽에 있는 곳으로 갑니다.']],
-  '좋음':[['🎫','사도 괜찮은 날입니다. 이번 회차에 더 좋은 날이 있으면 그날로 미룹니다.'],['🧭','금색 쪽 판매점을 고를 수 있으면 고르고, 못 고르면 가까운 곳에서 삽니다.']],
-  '보통':[['➖','이날은 사지 않고 기다립니다. 이번 회차에 좋은 날이 없으면 토요일 전 아무 날이나 한 장만.'],['🧭','위 나침반 방향은 참고만 합니다.']],
-  '나쁨':[['⛔','이날은 사지 않습니다. 횡재 기운이 막혀 헛돈 쓰기 쉬운 날입니다.'],['🛡️','지난 회차 당첨 확인, 번호 정리처럼 돈 안 드는 일만 합니다.']],
+  '대길':['이번 회차 로또는 이날 삽니다. 한 장(5천 원)이면 충분합니다.','판매점은 지금 있는 곳에서 아래 나침반의 금색 쪽으로 갑니다.'],
+  '길':['사도 좋은 날입니다. 이번 회차에 대길 날이 따로 있으면 그날로 미룹니다.','금색 쪽 판매점을 고를 수 있으면 고르고, 없으면 가까운 곳에서 삽니다.'],
+  '평':['이날은 사지 않고 기다립니다. 이번 회차에 좋은 날이 없으면 토요일 저녁 8시 전에 아무 날이나 한 장만.','아래 나침반 방향은 참고만 합니다.'],
+  '흉':['이날은 사지 않습니다. 횡재 기운이 막혀 헛돈 쓰기 쉬운 날입니다.','지난 회차 당첨 확인, 번호 정리처럼 돈 안 드는 일만 합니다.'],
 };
 
 // ===== 상태 =====
@@ -282,11 +284,21 @@ WEEK0=J_TODAY-((J_TODAY+1)%7); // 이번 회차 일요일
 const LOTTO1=jdn(2002,12,7); const roundOf=sun=>Math.floor((sun+6-LOTTO1)/7)+1; // 토요일 추첨 기준 회차
 const fmt=J=>{const c=fromJdn(J);return `${c.y}.${String(c.m).padStart(2,'0')}.${String(c.d).padStart(2,'0')}`;};
 const fmtK=J=>{const c=fromJdn(J);return `${c.m}월 ${c.d}일 ${WD[(J+1)%7]}요일`;};
+const HOURS=[['모름',12,0],['자시 (밤 11시~새벽 1시)',23,30],['축시 (새벽 1~3시)',2,0],['인시 (새벽 3~5시)',4,0],['묘시 (새벽 5~7시)',6,0],['진시 (아침 7~9시)',8,0],['사시 (아침 9~11시)',10,0],['오시 (낮 11시~1시)',12,0],['미시 (낮 1~3시)',14,0],['신시 (낮 3~5시)',16,0],['유시 (저녁 5~7시)',18,0],['술시 (저녁 7~9시)',20,0],['해시 (밤 9~11시)',22,0]];
+function fillSelects(){
+  const Y=$('selY'),M=$('selM'),D=$('selD'),H=$('selH'); if(Y.options.length) return;
+  for(let y=1930;y<=2015;y++){const o=document.createElement('option');o.value=y;o.textContent=y+'년';Y.appendChild(o);}
+  for(let m=1;m<=12;m++){const o=document.createElement('option');o.value=m;o.textContent=m+'월';M.appendChild(o);}
+  for(let d=1;d<=31;d++){const o=document.createElement('option');o.value=d;o.textContent=d+'일';D.appendChild(o);}
+  HOURS.forEach((h,i)=>{const o=document.createElement('option');o.value=i;o.textContent=h[0];H.appendChild(o);});
+  Y.value=1960; M.value=1; D.value=1; H.value=0;
+}
 function readInput(){
-  const [y,m,d]=($('bdate').value||'').split('-').map(Number); if(!y) return false;
-  const [hh,mm]=($('btime').value||'12:00').split(':').map(Number);
+  fillSelects();
+  const y=+$('selY').value,m=+$('selM').value,d=+$('selD').value; if(!y||!m||!d) return false;
+  const h=HOURS[+$('selH').value]||HOURS[0]; const hh=h[1],mm=h[2];
   ME=saju(y,m,d,hh,mm,$('optSolar').checked,$('optYaja').checked);
-  try{localStorage.setItem('jaemul',JSON.stringify({d:$('bdate').value,t:$('btime').value,n:$('bname').value,so:$('optSolar').checked,ya:$('optYaja').checked}));}catch(e){}
+  try{localStorage.setItem('jaemul2',JSON.stringify({y,m,d,h:+$('selH').value,n:$('bname').value,so:$('optSolar').checked,ya:$('optYaja').checked}));}catch(e){}
   return true;
 }
 function show(v){ ['input','week','day','record'].forEach(k=>$('v-'+k).hidden=(k!==v)); window.scrollTo(0,0); if(location.hash!=='#'+v) history.replaceState(null,'','#'+v); }
@@ -296,9 +308,9 @@ function renderWeek(){
   const name=($('bname').value||'').trim(); const me=ME;
   const gwDays=[]; for(let i=0;i<40&&gwDays.length<2;i++){const b=dayIdx(J_TODAY+i)%12; if(GWIIN[me.day.s].includes(b)) gwDays.push(J_TODAY+i);}
   const pil0=[me.year,me.month,me.day,me.hour]; let jc=0; pil0.forEach((p,i)=>{ if(i!==2&&STEM_EL[p.s]===me.jaeEl) jc++; if(STEM_EL[BR_MAIN[p.b]]===me.jaeEl) jc++; });
-  const base=jc>=2?'타고난 재물운이 든든한 편':jc===1?'타고난 재물운이 있는 편':'타고난 재물운보다 때를 잘 고르는 게 중요한 편';
-  $('meLine').textContent=`${name?name+' 님은 ':''}${base}입니다.`;
-  $('meSub').textContent=`돈 일은 ${EL_DIR[me.jaeEl]}쪽에서 보면 늘 유리하고, 도와주는 사람은 ${gwDays.map(fmtK).join('과 ')}에 나타납니다.`;
+  const base=jc>=2?'타고난 재물운이 든든한 편':jc===1?'타고난 재물운이 있는 편':'타고난 재물운보다 때를 잘 고르는 것이 중요한 편';
+  $('meLine').textContent=`${name?name+' 님은 ':''}${SK[me.day.s]}${BK[me.day.b]}일생(${SH[me.day.s]}${BH[me.day.b]}), ${base}입니다.`;
+  $('meSub').textContent=`돈 일은 ${EL_DIR[me.jaeEl]}쪽에서 보면 늘 유리하고, 귀인은 ${gwDays.map(fmtK).join('과 ')}에 옵니다.`;
   renderAskResult();
   const sel=$('wSel'); sel.innerHTML='';
   for(let i=-1;i<=12;i++){const a=WEEK0+i*7,b=a+6; const lab=`${roundOf(a)}회 · ${fmt(a).slice(5)}(일)~${fmt(b).slice(5)}(토)`+(i===0?' · 이번 회차':i===1?' · 다음 회차':'');
@@ -306,18 +318,24 @@ function renderWeek(){
   sel.value=weekOff;
   const a=WEEK0+weekOff*7;
   $('weekTitle').textContent=`${roundOf(a)}회 로또, 어느 날 살까`;
-  // 가장 가까운 최상·좋음 날
-  let nb=null; for(let i=0;i<60&&!nb;i++){const x=scoreDay(me,J_TODAY+i); if(x.score>=4) nb=x;}
-  if(!nb) for(let i=0;i<60&&!nb;i++){const x=scoreDay(me,J_TODAY+i); if(x.score>=2) nb=x;}
-  if(nb){const dd=nb.J-J_TODAY; $('nextBest').innerHTML=`<div class="ic">⭐</div><div><b>${dd===0?'오늘':dd===1?'내일':dd+'일 뒤'} ${fmtK(nb.J)}</b><small>${roundOf(nb.J-((nb.J+1)%7))}회 기준, 앞으로 로또 사기 가장 좋은 날입니다. ${ONE[grade(nb.score)[0]]}. 누르면 어느 쪽 판매점으로 갈지 나옵니다.</small></div>`; $('nextBest').dataset.j=nb.J; $('nextBest').hidden=false;} else $('nextBest').hidden=true;
+  // 이번 회차 안에서 살 날 (오늘 이후, 추첨 전)
+  const wk=[]; for(let i=0;i<7;i++) wk.push(scoreDay(me,a+i));
+  const satJ=a+6; const nowD=new Date(); const closed=J_TODAY>satJ||(J_TODAY===satJ&&nowD.getHours()>=20);
+  const cand=wk.filter(x=>x.J>=J_TODAY&&x.score>=2&&!closed).sort((x,y)=>y.score-x.score||x.J-y.J);
+  const ans=$('answer');
+  if(closed){ ans.innerHTML=`<div class="q">${roundOf(a)}회</div><div class="a">이 회차는 판매가 끝났습니다<small>다음 회차(›)를 눌러 보세요.</small></div>`; }
+  else if(cand.length){ const x=cand[0]; const [gl]=grade(x.score); const c=fromJdn(x.J);
+    ans.innerHTML=`<div class="q">${roundOf(a)}회 로또, 사는 날은</div><div class="a">${c.m}월 ${c.d}일 ${WD[(x.J+1)%7]}요일${x.J===J_TODAY?' (오늘)':''}<small>${HANJA[gl]} ${gl} · ${JAESIN[x.s]}쪽 판매점에서 한 장</small></div><button data-j="${x.J}">이날 자세히 보기</button>`;
+    ans.querySelector('button').addEventListener('click',e=>{ selJ=+e.target.dataset.j; renderDay(); show('day'); }); }
+  else { let nb=null; for(let i=1;i<60&&!nb;i++){const x=scoreDay(me,satJ+i); if(x.score>=2) nb=x;}
+    ans.innerHTML=`<div class="q">${roundOf(a)}회</div><div class="a">이 회차 남은 날에는<br>좋은 날이 없습니다<small>${nb?`다음 좋은 날은 ${fmtK(nb.J)}(${roundOf(nb.J-((nb.J+1)%7))}회)입니다. 이번 회차는 쉬거나, 토요일 저녁 8시 전에 한 장만 사세요.`:'이번 회차는 쉬어도 됩니다.'}</small></div>`; }
   const days=[]; for(let i=0;i<7;i++) days.push(scoreDay(me,a+i));
   const best=Math.max(...days.map(x=>x.score));
-  $('weekList').innerHTML=days.map(x=>{const c=fromJdn(x.J); const w=(x.J+1)%7; const [gl,gc]=grade(x.score);
+  $('weekList').innerHTML=days.map(x=>{const c=fromJdn(x.J); const w=(x.J+1)%7; const [gl]=grade(x.score);
     return `<button class="dayrow ${x.score===best&&best>=2?'best':''} ${x.J===J_TODAY?'today':''}" data-j="${x.J}">
       <div class="wd ${w===0?'sun':w===6?'sat':''}">${WD[w]}<small>${c.m}/${c.d}</small></div>
-      <div class="mid"><div class="gz">${x.J===J_TODAY?'오늘 · ':''}${ANIMAL[x.b]}의 날${w===6?' · 추첨일, 저녁 8시 판매 마감':''}</div>
-      <div class="dirs">${ONE[gl]}</div></div>
-      <div class="sc ${gc}">${x.score>0?'+':''}${x.score}<small>${gl} ›</small></div></button>`;}).join('');
+      <div class="mid"><div class="gz">${x.J===J_TODAY?'오늘 · ':''}${SK[x.s]}${BK[x.b]}일 · ${ANIMAL[x.b]}의 날${w===6?' · 추첨일(저녁 8시 마감)':''}</div><div class="dirs">${ONE[gl]}</div></div>
+      ${sealOf(gl,true)}</button>`;}).join('');
   $('weekList').querySelectorAll('.dayrow').forEach(b=>b.addEventListener('click',()=>{selJ=Number(b.dataset.j); renderDay(); show('day');}));
   // 내 사주 자세히
   const P=[['시간','태어난 시각',me.hour],['날','나',me.day],['달','태어난 달',me.month],['해','태어난 해',me.year]];
@@ -330,29 +348,27 @@ function renderWeek(){
     ['💰','내가 다스리는 돈 기운은 '+EK[me.jaeEl]+'이고, 타고난 사주 안에 '+jaeCnt+'개 있습니다', jaeCnt?'타고난 돈 기운이 있는 편입니다. 이 기운이 오는 날에 더 크게 움직입니다.':'타고난 돈 기운이 겉으로 드러나지 않아, 돈 기운이 오는 날을 골라 움직이는 게 유리합니다.'],
     ['🤝','도와주는 사람이 나타나는 날은 12일마다 두 번 돌아옵니다', (gwIn?'사주 안에도 이 기운이 있어 사람을 통해 돈이 들어오기 쉽습니다. ':'')+'다음은 '+gwDays.map(fmtK).join(', ')+'입니다. 이날 사람 만나는 약속을 잡으면 좋습니다.'],
     [me.strong?'💪':me.weak?'🍃':'⚖️','나는 '+(me.strong?'힘이 센 편':me.weak?'힘이 약한 편':'치우침 없는 편')+'입니다', me.weak?'돈이 와도 지키기 어려운 편입니다. 그래서 돈 기운이 오는 날은 점수를 낮추고, 내 힘을 보태 주는 날은 점수를 더 줍니다.':'돈 기운이 오는 날을 그대로 믿고 움직여도 됩니다.'],
-  ].map(([ic,t,p])=>`<div class="card"><div class="ic">${ic}</div><div><h3>${t}</h3><p>${p}</p></div></div>`).join('');
+  ].map(([ic,t,p])=>`<div class="card one"><div><h3>${t}</h3><p>${p}</p></div></div>`).join('');
 }
 
 // ===== 화면 3 =====
 let lastDay=null;
 function renderDay(){
   const me=ME; const x=scoreDay(me,selJ); lastDay=x; const c=fromJdn(x.J); const [gl,gc]=grade(x.score);
-  $('dayHero').innerHTML=`<div class="date">${c.y}년 ${fmtK(x.J)}${x.J===J_TODAY?' · 오늘':''}</div>
-    <div class="note">${ANIMAL[x.b]}의 날 <span style="opacity:.7">(${SK[x.s]}${BK[x.b]}일)</span></div>
-    <div class="score ${gc}">${x.score>0?'+':''}${x.score} <span style="font-size:1.2rem">로또 운 ${gl}</span></div>`;
+  $('dayHero').innerHTML=`<div><div class="date">${c.y}년 ${fmtK(x.J)}${x.J===J_TODAY?' (오늘)':''}</div><div class="note">${SK[x.s]}${BK[x.b]}일(${SH[x.s]}${BH[x.b]}) · ${ANIMAL[x.b]}의 날 · 로또 운 <b>${gl}</b> <span style="opacity:.6">(${x.score>0?'+':''}${x.score})</span></div></div>${sealOf(gl,false)}`;
   const fixed=EL_DIR[me.jaeEl], jaesin=JAESIN[x.s], huisin=HUISIN[x.s];
   drawCompass(fixed,jaesin,huisin,x);
   $('legend').innerHTML=[
-    ['📍','방향은 집이나 사무실처럼 그날 출발하는 곳을 기준으로 봅니다',`위 그림은 전통 나침반 윤도(輪圖)입니다. 금색으로 칠한 칸이 이날 돈 일 보는 쪽, 주황 점이 사람 만나는 쪽, 초록 테두리가 나에게 늘 유리한 쪽입니다. 휴대폰 나침반 앱을 켜고 각도를 맞추면 됩니다. 북 0°, 동 90°, 남 180°, 서 270°.`],
-    ['🟡',`로또는 ${jaesin}쪽(윤도 ${DIR_YUN[jaesin]}, ${DEG[jaesin]})에 있는 판매점에서 삽니다`,`지금 있는 곳에서 ${jaesin}쪽에 있는 로또 판매점을 고릅니다. 그쪽에 없으면 가까운 곳에서 사되, 가게 앞에서 ${jaesin}쪽을 한 번 보고 들어갑니다.`],
-    ['🟠',`사람은 ${huisin}쪽(윤도 ${DIR_YUN[huisin]}, ${DEG[huisin]})에서 만납니다`,`미팅·면접·소개 약속 장소를 출발하는 곳에서 ${huisin}쪽으로 잡습니다.`],
-    ['🟢',`나에게 늘 유리한 쪽은 ${fixed}${fixed==='중앙'?'':'('+DEG[fixed]+')'}입니다`,fixed==='중앙'?'집 근처, 늘 다니던 가게가 나에게 맞습니다. 날짜와 상관없습니다.':`날짜와 상관없이 고정입니다. 단골 판매점을 정할 때 집에서 ${fixed}쪽에 있는 곳을 고릅니다.`],
-    [jaesin===fixed?'⭐':'↔️',jaesin===fixed?'이날은 돈 일 보는 쪽과 늘 유리한 쪽이 같습니다':'이날 돈 일 보는 쪽과 늘 유리한 쪽이 다릅니다',jaesin===fixed?'한 방향만 챙기면 되는 가장 좋은 날입니다.':`이날 살 판매점은 ${jaesin}쪽, 단골로 정할 판매점은 ${fixed}쪽을 따릅니다.`],
-  ].map(([ic,t,p])=>`<div class="card"><div class="ic">${ic}</div><div><h3>${t}</h3><p>${p}</p></div></div>`).join('');
-  $('todo').innerHTML=ADVICE[gl].map(([ic,p])=>`<div class="card"><div class="ic">${ic}</div><p>${p}</p></div>`).join('');
+    ['財',`로또는 ${jaesin}쪽(${DEG[jaesin]}) 판매점에서 삽니다`,`위 나침반에서 금색으로 칠한 칸이 ${jaesin}쪽(윤도 ${DIR_YUN[jaesin]})입니다. 지금 있는 곳에서 그쪽에 있는 판매점을 고릅니다. 없으면 가까운 곳에서 사되, 가게 앞에서 ${jaesin}쪽을 한 번 보고 들어갑니다.`],
+    ['方','방향은 집이나 지금 있는 곳에서 봅니다',`휴대폰 나침반을 켜고 각도를 맞추면 됩니다. 북 0°, 동 90°, 남 180°, 서 270°. 모르겠으면 해 뜨는 쪽이 동쪽입니다.`],
+    ['人',`사람은 ${huisin}쪽(주황 점)에서 만납니다`,`자녀나 친구를 만나 같이 사러 간다면 ${huisin}쪽에서 만나면 좋습니다.`],
+    ['常',`나에게 늘 유리한 쪽은 ${fixed}${fixed==='중앙'?'':'('+DEG[fixed]+', 초록 테두리)'}입니다`,fixed==='중앙'?'집 근처, 늘 다니던 가게가 나에게 맞습니다.':`날짜와 상관없이 늘 그렇습니다. 단골 판매점은 집에서 ${fixed}쪽에 있는 곳으로 정합니다.`],
+  ].map(([ic,t,p])=>`<div class="card"><span class="seal sm">${ic}</span><div><h3>${t}</h3><p>${p}</p></div></div>`).join('');
+  $('todoTitle').textContent=gl==='대길'||gl==='길'?'이날 할 일':'이날 피할 일';
+  $('todo').innerHTML=ADVICE[gl].map(p=>`<div class="card one"><p>${p}</p></div>`).join('');
   $('storeTitle').textContent=`${jaesin}쪽에 있는 로또 판매점`; $('storeList').innerHTML='';
   renderBoughtBtn();
-  $('dayWhy').innerHTML=x.reasons.length?x.reasons.map(r=>`<div class="${r.w>0?'g':'b'}">${r.txt} <b>(${r.w>0?'+':''}${Math.round(r.w*10)/10})</b></div>`).join(''):'<div>이날은 내 사주와 특별히 맞물리는 것이 없어 재물운이 평범합니다.</div>';
+  $('dayWhy').innerHTML=x.reasons.length?x.reasons.map(r=>`<div class="${r.w>0?'g':'b'}">${r.txt} <b>(${r.w>0?'+':''}${Math.round(r.w*10)/10})</b></div>`).join(''):'<div>이날은 내 사주와 특별히 맞물리는 것이 없어 보통 날입니다.</div>';
 }
 function drawCompass(fixed,jaesin,huisin,x){
   // 황금 윤도: 검은 옻칠 원판 위에 금속 광택의 금 테·금 고리·돋을새김 글자. 안쪽부터 팔괘 → 24방위 → 24절기 → 72분금.
@@ -417,7 +433,7 @@ function drawCompass(fixed,jaesin,huisin,x){
 // ===== 이벤트 =====
 
 // ===== 기록 (기기 저장) =====
-const RESULTS={none:'꽝',r5:'5등',r4:'4등',r3:'3등 이상'};
+const RESULTS={none:'꽝',r5:'5등 (5천 원)',r4:'4등 (5만 원)',r3:'3등 이상'};
 function loadRec(){ try{ return JSON.parse(localStorage.getItem('jaemul_rec')||'{}'); }catch(e){ return {}; } }
 function saveRec(r){ try{ localStorage.setItem('jaemul_rec',JSON.stringify(r)); }catch(e){} }
 const recKey=J=>String(J);
@@ -427,22 +443,22 @@ function renderAskResult(){
   const pending=Object.values(rec).filter(r=>r.bought&&!r.result&&drawPassed(r.J)).sort((a,b)=>b.J-a.J);
   if(!pending.length){ box.hidden=true; return; }
   const r=pending[0]; const rd=roundOf(r.J-((r.J+1)%7));
-  box.innerHTML=`<h2>${rd}회 결과는 어땠나요?</h2><p class="note">${fmtK(r.J)}에 산 로또입니다. 추첨이 끝났으니 결과를 남겨 두면 길일 기록이 쌓입니다.</p>
+  box.innerHTML=`<h2>${rd}회 결과는 어땠나요?</h2><p class="note">${fmtK(r.J)}에 산 로또입니다. 추첨이 끝났습니다. 결과를 눌러 두면 길일 기록이 쌓입니다.</p>
     <div class="choice">${Object.entries(RESULTS).map(([k,v])=>`<button data-k="${k}">${v}</button>`).join('')}</div>`;
   box.hidden=false;
   box.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ const rec2=loadRec(); rec2[recKey(r.J)].result=b.dataset.k; saveRec(rec2); renderAskResult(); }));
 }
-function renderBoughtBtn(){ const rec=loadRec(); const b=$('boughtBtn'); const on=!!(rec[recKey(selJ)]&&rec[recKey(selJ)].bought); b.textContent=on?'✅ 이날 샀어요 (누르면 취소)':'🎫 이날 샀어요'; b.style.opacity=on?'.85':'1'; }
+function renderBoughtBtn(){ const rec=loadRec(); const b=$('boughtBtn'); const on=!!(rec[recKey(selJ)]&&rec[recKey(selJ)].bought); b.textContent=on?'이날 샀다고 적어 두었습니다 (누르면 취소)':'이날 샀어요'; b.style.opacity=on?'.85':'1'; }
 $('boughtBtn').addEventListener('click',()=>{ const rec=loadRec(); const k=recKey(selJ); const x=scoreDay(ME,selJ);
   if(rec[k]&&rec[k].bought){ delete rec[k]; } else { rec[k]={J:selJ,bought:true,score:x.score,grade:grade(x.score)[0],dir:JAESIN[x.s],result:null,at:Date.now()}; }
   saveRec(rec); renderBoughtBtn(); });
 function renderRecord(){
   const rec=loadRec(); const rows=Object.values(rec).filter(r=>r.bought).sort((a,b)=>b.J-a.J);
   const good=rows.filter(r=>r.score>=2), won=r=>r.result&&r.result!=='none';
-  $('recSummary').innerHTML=`<div class="stat"><div><b>${rows.length}</b><span>산 회차</span></div><div><b>${good.length}</b><span>좋은 날에 산 회차</span></div><div><b>${rows.filter(won).length}</b><span>5등 이상</span></div></div>
-    <p class="note">${good.length?`좋은 날에 산 ${good.length}회 중 ${good.filter(won).length}회 당첨, 그 외 ${rows.length-good.length}회 중 ${rows.filter(r=>r.score<2).filter(won).length}회 당첨.`:'아직 좋은 날에 산 기록이 없습니다.'} 표본이 쌓여야 뜻이 생깁니다. 재미로 보세요.</p>`;
+  $('recSummary').innerHTML=`<div class="stat"><div><b>${rows.length}</b><span>산 회차</span></div><div><b>${good.length}</b><span>길한 날에 산 회차</span></div><div><b>${rows.filter(won).length}</b><span>5등 이상</span></div></div>
+    <p class="note">${good.length?`길한 날에 산 ${good.length}회 중 ${good.filter(won).length}회 당첨, 그 외 ${rows.length-good.length}회 중 ${rows.filter(r=>r.score<2).filter(won).length}회 당첨.`:'아직 길한 날에 산 기록이 없습니다.'} 여러 번 쌓여야 뜻이 생깁니다. 재미로 보세요.</p>`;
   $('recList').innerHTML=rows.length?rows.map(r=>{const rd=roundOf(r.J-((r.J+1)%7)); const res=r.result?RESULTS[r.result]:(drawPassed(r.J)?'결과 입력 전':'추첨 전');
-    return `<div class="rec"><div><b>${rd}회 · ${fmtK(r.J)}</b><div class="meta">로또 운 ${r.grade}(${r.score>0?'+':''}${r.score}) · ${r.dir}쪽</div></div><div class="res ${won(r)?'win':''}">${res}</div></div>`;}).join(''):'<p class="note">아직 기록이 없습니다. 상세 화면에서 "이날 샀어요"를 누르면 여기에 쌓입니다.</p>';
+    return `<div class="rec"><div><b>${rd}회 · ${fmtK(r.J)}</b><div class="meta">로또 운 ${r.grade} · ${r.dir}쪽 판매점</div></div><div class="res ${won(r)?'win':''}">${res}</div></div>`;}).join(''):'<p class="note">아직 기록이 없습니다. 상세 화면에서 "이날 샀어요"를 누르면 여기에 쌓입니다.</p>';
 }
 $('toRecord').addEventListener('click',()=>{ renderRecord(); show('record'); });
 $('recToWeek').addEventListener('click',()=>{ renderWeek(); show('week'); });
@@ -455,27 +471,30 @@ function icsFor(list){ // list: [{J, title, desc}]
   return `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//jaemul-gilil//KO\r\nCALSCALE:GREGORIAN\r\n${ev}\r\nEND:VCALENDAR\r\n`;
 }
 function downloadIcs(text,name){ const blob=new Blob([text],{type:'text/calendar;charset=utf-8'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(url); a.remove();},1000); }
-$('icsDay').addEventListener('click',()=>{ const x=scoreDay(ME,selJ); const [gl]=grade(x.score); downloadIcs(icsFor([{J:selJ,title:`🎫 로또 사는 날 (운 ${gl}, ${JAESIN[x.s]}쪽 판매점)`,desc:`로또 운 ${gl}(${x.score}). 지금 있는 곳에서 ${JAESIN[x.s]}쪽 판매점. 한 장이면 충분합니다.`}]),`lotto-${fmt(selJ)}.ics`); });
-$('icsWeek').addEventListener('click',()=>{ const a=WEEK0+weekOff*7; const days=[]; for(let i=0;i<7;i++){const x=scoreDay(ME,a+i); if(x.score>=2) days.push({J:x.J,title:`🎫 로또 사는 날 (운 ${grade(x.score)[0]}, ${JAESIN[x.s]}쪽)`,desc:`로또 운 ${grade(x.score)[0]}(${x.score}). ${JAESIN[x.s]}쪽 판매점에서 한 장.`});}
-  if(!days.length){ const b=$('icsWeek'); b.textContent='이번 회차엔 좋은 날이 없습니다'; setTimeout(()=>b.textContent='📅 이번 회차 길일 캘린더에',2500); return; }
+$('icsDay').addEventListener('click',()=>{ const x=scoreDay(ME,selJ); const [gl]=grade(x.score); downloadIcs(icsFor([{J:selJ,title:`로또 사는 날 (${gl}, ${JAESIN[x.s]}쪽 판매점)`,desc:`로또 운 ${gl}(${x.score}). 지금 있는 곳에서 ${JAESIN[x.s]}쪽 판매점. 한 장이면 충분합니다.`}]),`lotto-${fmt(selJ)}.ics`); });
+$('icsWeek').addEventListener('click',()=>{ const a=WEEK0+weekOff*7; const days=[]; for(let i=0;i<7;i++){const x=scoreDay(ME,a+i); if(x.score>=2) days.push({J:x.J,title:`로또 사는 날 (${grade(x.score)[0]}, ${JAESIN[x.s]}쪽)`,desc:`로또 운 ${grade(x.score)[0]}(${x.score}). ${JAESIN[x.s]}쪽 판매점에서 한 장.`});}
+  if(!days.length){ const b=$('icsWeek'); b.textContent='이번 회차엔 좋은 날이 없습니다'; setTimeout(()=>b.textContent='달력에 넣기',2500); return; }
   downloadIcs(icsFor(days),`lotto-${roundOf(a)}.ics`); });
 
 $('run').addEventListener('click',()=>{ if(!readInput()) return; weekOff=0; renderWeek(); show('week'); });
 $('toInput').addEventListener('click',()=>show('input'));
 $('toWeek').addEventListener('click',()=>{ weekOff=Math.floor((selJ-WEEK0)/7); renderWeek(); show('week'); });
-$('nextBest').addEventListener('click',e=>{ selJ=Number(e.currentTarget.dataset.j); renderDay(); show('day'); });
+
 $('wPrev').addEventListener('click',()=>{ if(weekOff>-1){weekOff--; renderWeek();} });
 $('wNext').addEventListener('click',()=>{ if(weekOff<12){weekOff++; renderWeek();} });
 $('wSel').addEventListener('change',e=>{ weekOff=Number(e.target.value); renderWeek(); });
 $('dPrev').addEventListener('click',()=>{ selJ--; renderDay(); window.scrollTo(0,0); });
 $('dNext').addEventListener('click',()=>{ selJ++; renderDay(); window.scrollTo(0,0); });
 $('copyBtn').addEventListener('click',()=>{ if(!lastDay) return; const x=lastDay; const [gl]=grade(x.score);
-  const txt=`${fromJdn(x.J).y}년 ${fmtK(x.J)} 로또 운 ${gl}(${x.score>0?'+':''}${x.score})\n지금 있는 곳에서 ${JAESIN[x.s]}쪽(${DEG[JAESIN[x.s]]}) 판매점\n${ADVICE[gl][0][1]}`;
-  const btn=$('copyBtn'); const done=()=>{btn.textContent='복사했습니다'; setTimeout(()=>btn.textContent='이날 정보 복사하기',1500);};
+  const txt=`[재물 길일 나침반]\n${fromJdn(x.J).y}년 ${fmtK(x.J)} 로또 운 ${gl}(${HANJA[gl]})\n${ADVICE[gl][0]}\n판매점은 지금 있는 곳에서 ${JAESIN[x.s]}쪽(${DEG[JAESIN[x.s]]}).\nhttps://minam205.github.io/jaemul-gilil/`;
+  const btn=$('copyBtn'); const done=()=>{btn.textContent='복사했습니다. 카카오톡에 붙여 넣으세요'; setTimeout(()=>btn.textContent='자녀에게 보내기',2500);};
+  if(navigator.share){ navigator.share({text:txt}).catch(()=>{}); return; }
   try{ navigator.clipboard.writeText(txt).then(done).catch(()=>{btn.textContent=txt;}); }catch(e){ btn.textContent=txt; } });
 window.addEventListener('hashchange',()=>{ const h=location.hash.slice(1); if(!ME){show('input');return;} if(h==='day'&&selJ!=null){renderDay();show('day');} else if(h==='record'){renderRecord();show('record');} else if(h==='week'){renderWeek();show('week');} else show('input'); });
 (function init(){
-  try{const s=JSON.parse(localStorage.getItem('jaemul')||'null'); if(s){$('bdate').value=s.d;$('btime').value=s.t;$('bname').value=s.n||'';$('optSolar').checked=s.so;$('optYaja').checked=s.ya;}}catch(e){}
+  fillSelects();
+  try{const s=JSON.parse(localStorage.getItem('jaemul2')||'null'); if(s){$('selY').value=s.y;$('selM').value=s.m;$('selD').value=s.d;$('selH').value=s.h;$('bname').value=s.n||'';$('optSolar').checked=s.so;$('optYaja').checked=s.ya;}
+    else { const o=JSON.parse(localStorage.getItem('jaemul')||'null'); if(o&&o.d){const [y,m,d]=o.d.split('-').map(Number); $('selY').value=y;$('selM').value=m;$('selD').value=d; const hh=+(o.t||'12:00').split(':')[0]; const idx=hh>=23||hh<1?1:Math.floor(((hh+1)%24)/2)+1; $('selH').value=idx; $('bname').value=o.n||''; } else return show('input'); } }catch(e){ return show('input'); }
   if(readInput()){ renderWeek(); show('week'); } else show('input');
 })();
 </script>
@@ -490,7 +509,7 @@ const angDiff=(a,b)=>Math.abs(((a-b)%360+540)%360-180);
 function storeMsg(html){ $('storeList').innerHTML=`<p class="note">${html}</p>`; }
 async function findStores(lat,lng){
   const x=scoreDay(ME,selJ); const dir=JAESIN[x.s]; const target=DIR_ANG[dir];
-  storeMsg('판매점을 찾는 중입니다…');
+  storeMsg('판매점을 찾고 있습니다. 잠시만요.');
   try{ await loadKakao(); }catch(e){ storeMsg('지도를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.'); return; }
   const ps=new kakao.maps.services.Places(); const all=[]; const seen=new Set();
   const collect=(kw,cLat,cLng,radius)=>new Promise(res=>{ let page=0; ps.keywordSearch(kw,(data,status,pg)=>{ page++; if(status===kakao.maps.services.Status.OK){ data.forEach(d=>{ if(!seen.has(d.id)){seen.add(d.id); all.push(d);} }); if(pg.hasNextPage&&page<3){pg.nextPage(); return;} } res(); },{location:new kakao.maps.LatLng(cLat,cLng),radius}); });
