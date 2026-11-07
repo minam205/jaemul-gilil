@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0e1322" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f5f1e7" media="(prefers-color-scheme: light)">
-<meta name="description" content="이사도 손 없는 날 가듯, 로또도 날이 있습니다. 내 사주에 돈 들어오는 날이 따로 있습니다. 생년월일만 넣으면 이번 회차 사는 요일과 가게 방향을 짚어 드립니다.">
+<meta name="description" content="같은 5천 원이면, 내 사주에 돈 들어오는 날에 사세요. 생년월일만 넣으면 이번 회차 내 길일이 어느 요일인지, 가게는 어느 쪽인지 바로 나옵니다.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="재물 길일">
@@ -124,7 +124,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--seal);padding:8px 0;f
 
 <!-- 화면 1: 태어난 때 입력 -->
 <section class="view" id="v-input">
-  <div class="bar"><button class="back" id="inputBack" hidden>‹ 회차 목록으로</button><h1>재물 길일 나침반</h1><p class="hook">이사도 손 없는 날 가듯,<br>로또도 날이 있습니다.</p><p class="sub">내 사주에 돈 들어오는 날이 따로 있습니다. 생년월일만 넣으면 이번 회차 사는 <b>요일</b>과 가게 <b>방향</b>을 짚어 드립니다.</p><p class="note">생년월일은 이 휴대폰 밖으로 나가지 않습니다.</p></div>
+  <div class="bar"><button class="back" id="inputBack" hidden>‹ 회차 목록으로</button><h1>재물 길일 나침반</h1><p class="hook">같은 5천 원이면,<br>내 사주에 돈 들어오는 날에 사세요.</p><p class="sub">로또는 꿈을 사는 겁니다. 생년월일만 넣으면 이번 회차 <b>내 길일이 어느 요일</b>인지, <b>가게는 어느 쪽</b>인지 바로 나옵니다. 천 년 내려온 사주와 윤도로 짚습니다.</p><p class="note">무료이고, 생년월일은 이 휴대폰 밖으로 나가지 않습니다.</p></div>
   <div class="panel grid">
     <label>태어난 해·달·날 (양력)
       <div class="sel3"><select id="selY"></select><select id="selM"></select><select id="selD"></select></div>
@@ -329,10 +329,10 @@ function renderWeek(){
   const ans=$('answer');
   if(closed){ ans.innerHTML=`<div class="q">${roundOf(a)}회</div><div class="a">이 회차는 판매가 끝났습니다<small>다음 회차(›)를 눌러 보세요.</small></div>`; }
   else if(cand.length){ const x=cand[0]; const [gl]=grade(x.score); const c=fromJdn(x.J);
-    ans.innerHTML=`<div class="q">${roundOf(a)}회 로또, 사는 날은</div><div class="a">${c.m}월 ${c.d}일 ${WD[(x.J+1)%7]}요일${x.J===J_TODAY?' (오늘)':''}<small>로또 운 ${gl} (${x.score>0?'+':''}${x.score}점) · ${JAESIN[x.s]}쪽 판매점에서 한 장</small></div><button data-j="${x.J}">이날 자세히 보기</button>`;
+    ans.innerHTML=`<div class="q">${roundOf(a)}회, 당신의 날은</div><div class="a">${c.m}월 ${c.d}일 ${WD[(x.J+1)%7]}요일${x.J===J_TODAY?' (오늘)':''}입니다<small>로또 운 ${gl} (${x.score>0?'+':''}${x.score}점) · ${JAESIN[x.s]}쪽 판매점에서 한 장</small></div><button data-j="${x.J}">이날 자세히 보기</button>`;
     ans.querySelector('button').addEventListener('click',e=>{ selJ=+e.target.dataset.j; renderDay(); show('day'); }); }
   else { let nb=null; for(let i=1;i<60&&!nb;i++){const x=scoreDay(me,satJ+i); if(x.score>=2) nb=x;}
-    ans.innerHTML=`<div class="q">${roundOf(a)}회</div><div class="a">이 회차 남은 날에는<br>좋은 날이 없습니다<small>${nb?`다음 좋은 날은 ${fmtK(nb.J)}(${roundOf(nb.J-((nb.J+1)%7))}회)입니다. 이번 회차는 쉬거나, 토요일 저녁 8시 전에 한 장만 사세요.`:'이번 회차는 쉬어도 됩니다.'}</small></div>`; }
+    ans.innerHTML=`<div class="q">${roundOf(a)}회</div><div class="a">이 회차엔 당신의 날이<br>남아 있지 않습니다<small>${nb?`다음 좋은 날은 ${fmtK(nb.J)}(${roundOf(nb.J-((nb.J+1)%7))}회)입니다. 이번 회차는 쉬거나, 토요일 저녁 8시 전에 한 장만 사세요.`:'이번 회차는 쉬어도 됩니다.'}</small></div>`; }
   const days=[]; for(let i=0;i<7;i++) days.push(scoreDay(me,a+i));
   const best=Math.max(...days.map(x=>x.score));
   $('weekList').innerHTML=days.map(x=>{const c=fromJdn(x.J); const w=(x.J+1)%7; const [gl]=grade(x.score);
@@ -447,7 +447,7 @@ function renderAskResult(){
   const pending=Object.values(rec).filter(r=>r.bought&&!r.result&&drawPassed(r.J)).sort((a,b)=>b.J-a.J);
   if(!pending.length){ box.hidden=true; return; }
   const r=pending[0]; const rd=roundOf(r.J-((r.J+1)%7));
-  box.innerHTML=`<h2>${rd}회 결과는 어땠나요?</h2><p class="note">${fmtK(r.J)}에 산 로또입니다. 추첨이 끝났습니다. 결과를 눌러 두면 길일 기록이 쌓입니다.</p>
+  box.innerHTML=`<h2>${rd}회 결과는 어땠나요?</h2><p class="note">${fmtK(r.J)}에 산 로또입니다. 추첨이 끝났습니다. 결과를 눌러 두면 길일 기록이 쌓입니다. 다음 회차 당신의 날은 위 목록(›)에서 바로 보입니다.</p>
     <div class="choice">${Object.entries(RESULTS).map(([k,v])=>`<button data-k="${k}">${v}</button>`).join('')}</div>`;
   box.hidden=false;
   box.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ const rec2=loadRec(); rec2[recKey(r.J)].result=b.dataset.k; saveRec(rec2); renderAskResult(); }));
@@ -493,7 +493,7 @@ $('wSel').addEventListener('change',e=>{ weekOff=Number(e.target.value); renderW
 $('dPrev').addEventListener('click',()=>{ selJ--; renderDay(); window.scrollTo(0,0); });
 $('dNext').addEventListener('click',()=>{ selJ++; renderDay(); window.scrollTo(0,0); });
 $('copyBtn').addEventListener('click',()=>{ if(!lastDay) return; const x=lastDay; const [gl]=grade(x.score);
-  const txt=`[재물 길일 나침반] 로또도 날이 있습니다\n${fromJdn(x.J).y}년 ${fmtK(x.J)} 로또 운 ${gl}(${x.score>0?'+':''}${x.score}점)\n${ADVICE[gl][0]}\n판매점은 지금 있는 곳에서 ${JAESIN[x.s]}쪽(${DEG[JAESIN[x.s]]}).\nhttps://minam205.github.io/jaemul-gilil/`;
+  const txt=`[재물 길일 나침반] 나는 내 길일에 삽니다\n${fmtK(x.J)} · 로또 운 ${gl}(${x.score>0?'+':''}${x.score}점) · ${JAESIN[x.s]}쪽 가게\n당신 길일도 보세요: https://minam205.github.io/jaemul-gilil/`;
   const btn=$('copyBtn'); const done=()=>{btn.textContent='복사했습니다. 카카오톡에 붙여 넣으세요'; setTimeout(()=>btn.textContent='자녀에게 보내기',2500);};
   if(navigator.share){ navigator.share({text:txt}).catch(()=>{}); return; }
   try{ navigator.clipboard.writeText(txt).then(done).catch(()=>{btn.textContent=txt;}); }catch(e){ btn.textContent=txt; } });
