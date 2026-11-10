@@ -125,6 +125,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--seal);padding:8px 0;f
 <!-- 화면 1: 태어난 때 입력 -->
 <section class="view" id="v-input">
   <div class="bar"><button class="back" id="inputBack" hidden>‹ 회차 목록으로</button><h1>재물 길일 나침반</h1><p class="hook" id="hook">같은 5천 원이면,<br>내 사주에 돈 들어오는 날에 사세요.</p><p class="sub">로또는 꿈을 사는 겁니다. 생년월일만 넣으면 이번 회차 <b>내 길일이 어느 요일</b>인지, <b>가게는 어느 쪽</b>인지 바로 나옵니다. 천 년 내려온 사주와 윤도로 짚습니다.</p><p class="note">무료이고, 생년월일은 이 휴대폰 밖으로 나가지 않습니다.</p></div>
+  <div class="answer" id="sample" hidden></div>
   <div class="panel grid">
     <label>태어난 해·달·날 (양력)
       <div class="sel3"><select id="selY"></select><select id="selM"></select><select id="selD"></select></div>
@@ -281,7 +282,13 @@ const ADVICE={
 };
 
 const HOOKS=["같은 5천 원이면,|내 사주에 돈 들어오는 날에 사세요.", "이사도 손 없는 날 가듯,|로또도 날이 있습니다.", "번호는 운에 맡겨도,|날짜는 사주로 고르세요.", "꿈은 매주 꾸는데,|날은 아무 날이나 고르셨나요.", "명당 가는 날도|내 길일이어야 합니다.", "로또 사는 날,|내 사주한테 먼저 물어보세요.", "돈 들어오는 날은|사주마다 다릅니다.", "이번 주 당신의 날은|무슨 요일일까요.", "매주 사던 그 로또,|이번엔 날을 가려 보세요.", "토정비결은 일 년에 한 번,|이건 매주 한 번.", "천 년 된 사주로|이번 회차 길일을 짚습니다.", "어느 요일, 어느 쪽 가게.|생년월일만 넣으면 나옵니다.", "같은 가게, 같은 5천 원.|다른 건 날짜 하나뿐.", "오늘이 내 길일인지,|30초면 압니다.", "횡재 기운은|사주에 따로 적혀 있습니다.", "아무 날이나 사는 사람과|내 날에 사는 사람.", "윤도가 가리키는 쪽,|그쪽 가게로 가세요.", "꿈을 사는 5천 원,|기분 좋은 날에 쓰세요.", "내 사주가 고른 요일에|한 장만.", "로또에도 길일이 있습니다.|당신 것은 따로 있습니다.", "이번 회차 복주머니,|열어 보셨습니까.", "매주 토요일 꿈꾸시죠.|사는 날도 꿈처럼 고르세요.", "돈 방향은 날마다 바뀝니다.|오늘은 어느 쪽일까요.", "자녀한테 자랑할|나만의 길일 하나.", "사주 보러 안 가도 됩니다.|생년월일이면 충분합니다.", "로또는 운,|날짜는 사주.", "내 길일 금요일,|동북쪽 가게. 그렇게 나옵니다.", "한 주에 하루,|나한테 돈 기운이 세지는 날.", "번호 고민은 그만,|날짜부터 고르세요.", "길일에 산 로또는|기다리는 재미가 다릅니다."];
-function pickHook(){ const h=HOOKS[Math.floor(Math.random()*HOOKS.length)].split('|'); const el=document.getElementById('hook'); if(el) el.innerHTML=h[0]+'<br>'+h[1]; }
+function renderSample(){ const el=document.getElementById('sample'); if(!el) return; if(ME){ el.hidden=true; return; }
+  try{ const me=saju(1960,3,15,12,0,true,true); const sat0=WEEK0+6; const closed=J_TODAY>sat0||(J_TODAY===sat0&&now.getHours()>=20); let a=closed?WEEK0+7:WEEK0; let best=null;
+    for(let i=0;i<7;i++){ const J=a+i; if(J<J_TODAY) continue; const x=scoreDay(me,J); if(x.score>=2&&(!best||x.score>best.score)) best=x; }
+    if(!best){ for(let i=0;i<60&&!best;i++){ const x=scoreDay(me,J_TODAY+i); if(x.score>=2) best=x; } a=best.J-((best.J+1)%7); }
+    const [gl]=grade(best.score); const c=fromJdn(best.J);
+    el.innerHTML=`<div class="q">예시 · 1960년 3월 15일생 어떤 분의 ${roundOf(a)}회</div><div class="a">${c.m}월 ${c.d}일 ${WD[(best.J+1)%7]}요일<small>로또 운 ${gl} (${best.score>0?'+':''}${best.score}점) · ${JAESIN[best.s]}쪽 가게에서 한 장</small></div><p class="note" style="margin-top:8px">생년월일을 넣으면 당신 것이 이렇게 나옵니다.</p>`; el.hidden=false; }catch(e){ el.hidden=true; } }
+function pickHook(){ renderSample(); const h=HOOKS[Math.floor(Math.random()*HOOKS.length)].split('|'); const el=document.getElementById('hook'); if(el) el.innerHTML=h[0]+'<br>'+h[1]; }
 // ===== 상태 =====
 const $=id=>document.getElementById(id);
 let ME=null, WEEK0=0, weekOff=0, selJ=null;
