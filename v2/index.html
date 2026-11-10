@@ -556,7 +556,7 @@ $('dPrev').addEventListener('click',()=>{ selJ--; renderDay(); window.scrollTo(0
 $('dNext').addEventListener('click',()=>{ selJ++; renderDay(); window.scrollTo(0,0); });
 $('copyBtn').addEventListener('click',()=>{ if(!lastDay) return; const x=lastDay; const [gl]=grade(x.score);
   const st=(window.lastHit&&window.lastHit.d)?` ${window.lastHit.d.place_name}(${window.lastHit.d.road_address_name||window.lastHit.d.address_name||''})이 그쪽이래.`:'';
-  const txt=`${fmtK(x.J)}에 로또 한 장만 사다 줄래? 내 사주로 보니 그날이 길일(${gl}, ${x.score>0?'+':''}${x.score}점)이고, ${JAESIN[x.s]}쪽에 있는 가게가 좋대.${st} 5천 원짜리 한 장이면 돼.\n너도 네 길일 봐 봐: https://minam205.github.io/jaemul-gilil/`;
+  const txt=`${fmtK(x.J)}에 로또 가게 좀 같이 가 줄래? 내 사주로 보니 그날이 내 길일(${gl}, ${x.score>0?'+':''}${x.score}점)이고, 내가 있는 데서 ${JAESIN[x.s]}쪽 가게로 가야 한대.${st} 한 장만 사고 올 거야.\n너도 네 길일 봐 봐: https://minam205.github.io/jaemul-gilil/`;
   const btn=$('copyBtn'); const done=()=>{btn.textContent='복사했습니다. 카카오톡에 붙여 넣으세요'; setTimeout(()=>btn.textContent='자녀에게 부탁하기',2500);};
   if(navigator.share){ navigator.share({text:txt}).catch(()=>{}); return; }
   try{ navigator.clipboard.writeText(txt).then(done).catch(()=>{btn.textContent=txt;}); }catch(e){ btn.textContent=txt; } });
