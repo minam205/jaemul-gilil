@@ -203,7 +203,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--seal);padding:8px 0;f
   </div>
   <div class="panel"><h2>이날 운이 이렇게 나온 까닭</h2><div class="why" id="dayWhy"></div></div>
   <button id="boughtBtn" class="primary" style="margin-top:16px">이날 샀어요</button>
-  <div class="pn"><button id="copyBtn">자녀에게 보내기</button><button id="icsDay">달력에 넣기</button></div>
+  <div class="pn"><button id="copyBtn">자녀에게 부탁하기</button><button id="icsDay">달력에 넣기</button></div>
   <div class="pn"><button id="dPrev">‹ 전날</button><button id="dNext">다음날 ›</button></div>
 </section>
 
@@ -405,7 +405,7 @@ function renderDay(){
   ].map(([ic,t,p])=>`<div class="card"><span class="seal word">${ic}</span><div><h3>${t}</h3><p>${p}</p></div></div>`).join('');
   $('todoTitle').textContent=gl==='대길'||gl==='길'?'이날 할 일':'이날 피할 일';
   $('todo').innerHTML=ADVICE[gl].map(p=>`<div class="card one"><p>${p}</p></div>`).join('');
-  $('storeTitle').textContent=`${jaesin}쪽에 있는 로또 판매점`; $('storeList').innerHTML='';
+  $('storeTitle').textContent=`${jaesin}쪽에 있는 로또 판매점`; $('storeList').innerHTML=''; window.lastHit=null;
   renderBoughtBtn();
   $('dayWhy').innerHTML=x.reasons.length?x.reasons.map(r=>`<div class="${r.w>0?'g':'b'}">${r.txt} <b>(${r.w>0?'+':''}${Math.round(r.w*10)/10})</b></div>`).join(''):'<div>이날은 내 사주와 특별히 맞물리는 것이 없어 보통 날입니다.</div>';
 }
@@ -555,8 +555,9 @@ $('wSel').addEventListener('change',e=>{ weekOff=Number(e.target.value); renderW
 $('dPrev').addEventListener('click',()=>{ selJ--; renderDay(); window.scrollTo(0,0); });
 $('dNext').addEventListener('click',()=>{ selJ++; renderDay(); window.scrollTo(0,0); });
 $('copyBtn').addEventListener('click',()=>{ if(!lastDay) return; const x=lastDay; const [gl]=grade(x.score);
-  const txt=`[재물 길일 나침반] 나는 내 길일에 삽니다\n${fmtK(x.J)} · 로또 운 ${gl}(${x.score>0?'+':''}${x.score}점) · ${JAESIN[x.s]}쪽 가게\n당신 길일도 보세요: https://minam205.github.io/jaemul-gilil/`;
-  const btn=$('copyBtn'); const done=()=>{btn.textContent='복사했습니다. 카카오톡에 붙여 넣으세요'; setTimeout(()=>btn.textContent='자녀에게 보내기',2500);};
+  const st=(window.lastHit&&window.lastHit.d)?` ${window.lastHit.d.place_name}(${window.lastHit.d.road_address_name||window.lastHit.d.address_name||''})이 그쪽이래.`:'';
+  const txt=`${fmtK(x.J)}에 로또 한 장만 사다 줄래? 내 사주로 보니 그날이 길일(${gl}, ${x.score>0?'+':''}${x.score}점)이고, ${JAESIN[x.s]}쪽에 있는 가게가 좋대.${st} 5천 원짜리 한 장이면 돼.\n너도 네 길일 봐 봐: https://minam205.github.io/jaemul-gilil/`;
+  const btn=$('copyBtn'); const done=()=>{btn.textContent='복사했습니다. 카카오톡에 붙여 넣으세요'; setTimeout(()=>btn.textContent='자녀에게 부탁하기',2500);};
   if(navigator.share){ navigator.share({text:txt}).catch(()=>{}); return; }
   try{ navigator.clipboard.writeText(txt).then(done).catch(()=>{btn.textContent=txt;}); }catch(e){ btn.textContent=txt; } });
 window.addEventListener('hashchange',()=>{ const h=location.hash.slice(1); if(!ME){show('input');return;} if(h==='day'&&selJ!=null){renderDay();show('day');} else if(h==='record'){renderRecord();show('record');} else if(h==='week'){renderWeek();show('week');} else show('input'); });
@@ -588,7 +589,7 @@ async function findStores(lat,lng){
   await collect('로또',lat,lng,800);
   all.forEach(d=>{ const R=6371000,r=Math.PI/180; const dφ=(+d.y-lat)*r, dλ=(+d.x-lng)*r; const a=Math.sin(dφ/2)**2+Math.cos(lat*r)*Math.cos(+d.y*r)*Math.sin(dλ/2)**2; d.distance=Math.round(2*R*Math.asin(Math.sqrt(a))); });
   const rows=all.filter(d=>d.distance<=2500).map(d=>{const la=+d.y,lo=+d.x; const b=bearing(lat,lng,la,lo); return {d,la,lo,b,dist:+d.distance,hit:angDiff(b,target)<=22.5};});
-  const hits=rows.filter(r=>r.hit).sort((a,b)=>a.dist-b.dist).slice(0,5);
+  const hits=rows.filter(r=>r.hit).sort((a,b)=>a.dist-b.dist).slice(0,5); window.lastHit=hits[0]||null;
   const others=rows.filter(r=>!r.hit).sort((a,b)=>a.dist-b.dist).slice(0,2);
   const dirName=b=>{const names=Object.keys(DIR_ANG); return names.reduce((best,n)=>angDiff(b,DIR_ANG[n])<angDiff(b,DIR_ANG[best])?n:best,names[0]);};
   const card=(r,off)=>`<div class="store ${off?'off':''}"><div><b>${r.d.place_name}</b><div class="meta">${r.dist>=1000?(r.dist/1000).toFixed(1)+'km':r.dist+'m'} · ${dirName(r.b)}쪽(${Math.round(r.b)}°) · ${r.d.road_address_name||r.d.address_name||''}</div></div><a href="https://map.kakao.com/link/to/${encodeURIComponent(r.d.place_name)},${r.la},${r.lo}" target="_blank" rel="noopener">길찾기</a></div>`;
