@@ -183,7 +183,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--seal);padding:8px 0;f
   <div class="pn" style="margin-top:14px"><button id="toRecord">길일 도장첩</button><button id="icsWeek">달력에 넣기</button></div>
   <button id="installBtn" class="copy" style="margin-top:12px" hidden>휴대폰 바탕화면에 앱으로 설치</button>
   <p class="note" id="iosHint" style="margin-top:10px" hidden>아이폰은 아래 공유 버튼 → "홈 화면에 추가"를 누르면 앱처럼 쓸 수 있습니다.</p>
-  <p class="foot">사주 길일은 당첨 확률을 바꾸지 않습니다. 기분 좋게 사는 날과 방향을 고르는 재미로만 쓰세요. 로또는 회차당 한 장(5천 원)이면 충분하고, 지나치다 싶으면 한국도박문제예방치유원 ☎1336에 전화하면 됩니다.</p>
+  <p class="foot">사주 길일은 당첨 확률을 바꾸지 않습니다. 기분 좋게 사는 날과 방향을 고르는 재미로만 쓰세요. 지나치다 싶으면 한국도박문제예방치유원 ☎1336에 전화하면 됩니다.</p>
 </section>
 
 <!-- 화면 3: 날짜 상세 -->
@@ -299,19 +299,19 @@ const sealOf=(gl,sm,sc)=>`<span class="seal ${gl==='대길'?'fill':gl==='평'||g
 const ONE={'대길':'횡재 기운이 가장 센 날입니다. 로또는 이날 삽니다.','길':'횡재 기운이 받쳐 주는 날입니다. 사도 좋습니다.','평':'보통 날입니다. 더 좋은 날이 있으면 기다립니다.','흉':'횡재 기운이 막힌 날입니다. 이날은 사지 않습니다.'};
 const DEG={'북':'0°','동북':'45°','동':'90°','동남':'135°','남':'180°','서남':'225°','서':'270°','서북':'315°'};
 const ADVICE={
-  '대길':['이번 회차 로또는 이날 삽니다. 한 장(5천 원)이면 충분합니다.','판매점은 지금 있는 곳에서 아래 나침반의 금색 쪽으로 갑니다.'],
+  '대길':['이번 회차 로또는 이날 삽니다.','판매점은 지금 있는 곳에서 아래 나침반의 금색 쪽으로 갑니다.'],
   '길':['사도 좋은 날입니다. 이번 회차에 대길 날이 따로 있으면 그날로 미룹니다.','금색 쪽 판매점을 고를 수 있으면 고르고, 없으면 가까운 곳에서 삽니다.'],
   '평':['이날은 사지 않고 기다립니다. 이번 회차에 좋은 날이 없으면 토요일 저녁 8시 전에 아무 날이나 한 장만.','아래 나침반 방향은 참고만 합니다.'],
   '흉':['이날은 사지 않습니다. 횡재 기운이 막혀 헛돈 쓰기 쉬운 날입니다.','지난 회차 당첨 확인, 번호 정리처럼 돈 안 드는 일만 합니다.'],
 };
 
-const HOOKS=["같은 5천 원이면,|내 사주에 돈 들어오는 날에 사세요.", "이사도 손 없는 날 가듯,|로또도 날이 있습니다.", "번호는 운에 맡겨도,|날짜는 사주로 고르세요.", "꿈은 매주 꾸는데,|날은 아무 날이나 고르셨나요.", "명당 가는 날도|내 길일이어야 합니다.", "로또 사는 날,|내 사주한테 먼저 물어보세요.", "돈 들어오는 날은|사주마다 다릅니다.", "이번 주 당신의 날은|무슨 요일일까요.", "매주 사던 그 로또,|이번엔 날을 가려 보세요.", "토정비결은 일 년에 한 번,|이건 매주 한 번.", "천 년 된 사주로|이번 회차 길일을 짚습니다.", "어느 요일, 어느 쪽 가게.|생년월일만 넣으면 나옵니다.", "같은 가게, 같은 5천 원.|다른 건 날짜 하나뿐.", "오늘이 내 길일인지,|30초면 압니다.", "횡재 기운은|사주에 따로 적혀 있습니다.", "아무 날이나 사는 사람과|내 날에 사는 사람.", "윤도가 가리키는 쪽,|그쪽 가게로 가세요.", "꿈을 사는 5천 원,|기분 좋은 날에 쓰세요.", "내 사주가 고른 요일에|한 장만.", "로또에도 길일이 있습니다.|당신 것은 따로 있습니다.", "이번 회차 복주머니,|열어 보셨습니까.", "매주 토요일 꿈꾸시죠.|사는 날도 꿈처럼 고르세요.", "돈 방향은 날마다 바뀝니다.|오늘은 어느 쪽일까요.", "자녀한테 자랑할|나만의 길일 하나.", "사주 보러 안 가도 됩니다.|생년월일이면 충분합니다.", "로또는 운,|날짜는 사주.", "내 길일 금요일,|동북쪽 가게. 그렇게 나옵니다.", "한 주에 하루,|나한테 돈 기운이 세지는 날.", "번호 고민은 그만,|날짜부터 고르세요.", "길일에 산 로또는|기다리는 재미가 다릅니다."];
+const HOOKS=["같은 5천 원이면,|내 사주에 돈 들어오는 날에 사세요.", "이사도 손 없는 날 가듯,|로또도 날이 있습니다.", "번호는 운에 맡겨도,|날짜는 사주로 고르세요.", "꿈은 매주 꾸는데,|날은 아무 날이나 고르셨나요.", "명당 가는 날도|내 길일이어야 합니다.", "로또 사는 날,|내 사주한테 먼저 물어보세요.", "돈 들어오는 날은|사주마다 다릅니다.", "이번 주 당신의 날은|무슨 요일일까요.", "매주 사던 그 로또,|이번엔 날을 가려 보세요.", "토정비결은 일 년에 한 번,|이건 매주 한 번.", "천 년 된 사주로|이번 회차 길일을 짚습니다.", "어느 요일, 어느 쪽 가게.|생년월일만 넣으면 나옵니다.", "같은 가게, 같은 5천 원.|다른 건 날짜 하나뿐.", "오늘이 내 길일인지,|30초면 압니다.", "횡재 기운은|사주에 따로 적혀 있습니다.", "아무 날이나 사는 사람과|내 날에 사는 사람.", "윤도가 가리키는 쪽,|그쪽 가게로 가세요.", "꿈을 사는 5천 원,|기분 좋은 날에 쓰세요.", "내 사주가 고른 요일에|사세요.", "로또에도 길일이 있습니다.|당신 것은 따로 있습니다.", "이번 회차 복주머니,|열어 보셨습니까.", "매주 토요일 꿈꾸시죠.|사는 날도 꿈처럼 고르세요.", "돈 방향은 날마다 바뀝니다.|오늘은 어느 쪽일까요.", "자녀한테 자랑할|나만의 길일 하나.", "사주 보러 안 가도 됩니다.|생년월일이면 충분합니다.", "로또는 운,|날짜는 사주.", "내 길일 금요일,|동북쪽 가게. 그렇게 나옵니다.", "한 주에 하루,|나한테 돈 기운이 세지는 날.", "번호 고민은 그만,|날짜부터 고르세요.", "길일에 산 로또는|기다리는 재미가 다릅니다."];
 function renderSample(){ const el=document.getElementById('sample'); if(!el) return; if(ME){ el.hidden=true; return; }
   try{ const me=saju(1960,3,15,12,0,true,true); const sat0=WEEK0+6; const closed=J_TODAY>sat0||(J_TODAY===sat0&&now.getHours()>=20); let a=closed?WEEK0+7:WEEK0; let best=null;
     for(let i=0;i<7;i++){ const J=a+i; if(J<J_TODAY) continue; const x=scoreDay(me,J); if(x.score>=2&&(!best||x.score>best.score)) best=x; }
     if(!best){ for(let i=0;i<60&&!best;i++){ const x=scoreDay(me,J_TODAY+i); if(x.score>=2) best=x; } a=best.J-((best.J+1)%7); }
     const [gl]=grade(best.score); const c=fromJdn(best.J);
-    el.innerHTML=`<div class="q">예시 · 1960년 3월 15일생 어떤 분의 ${roundOf(a)}회</div><div class="a">${c.m}월 ${c.d}일 ${WD[(best.J+1)%7]}요일<small>로또 운 ${gl} (${best.score>0?'+':''}${best.score}점) · ${JAESIN[best.s]}쪽 가게에서 한 장</small></div><p class="note" style="margin-top:8px">생년월일을 넣으면 당신 것이 이렇게 나옵니다.</p>`; el.hidden=false; }catch(e){ el.hidden=true; } }
+    el.innerHTML=`<div class="q">예시 · 1960년 3월 15일생 어떤 분의 ${roundOf(a)}회</div><div class="a">${c.m}월 ${c.d}일 ${WD[(best.J+1)%7]}요일<small>로또 운 ${gl} (${best.score>0?'+':''}${best.score}점) · ${JAESIN[best.s]}쪽 가게</small></div><p class="note" style="margin-top:8px">생년월일을 넣으면 당신 것이 이렇게 나옵니다.</p>`; el.hidden=false; }catch(e){ el.hidden=true; } }
 function pickHook(){ renderSample(); const h=HOOKS[Math.floor(Math.random()*HOOKS.length)].split('|'); const el=document.getElementById('hook'); if(el) el.innerHTML=h[0]+'<br>'+h[1]; }
 // ===== 상태 =====
 const $=id=>document.getElementById(id);
@@ -364,7 +364,7 @@ function renderWeek(){
   const ans=$('answer');
   if(closed){ ans.innerHTML=`<div class="q">${roundOf(a)}회</div><div class="a">이 회차는 판매가 끝났습니다<small>다음 회차(›)를 눌러 보세요.</small></div>`; }
   else if(cand.length){ const x=cand[0]; const [gl]=grade(x.score); const c=fromJdn(x.J);
-    ans.innerHTML=`<div class="q">${roundOf(a)}회, 당신의 날은</div><div class="a">${c.m}월 ${c.d}일 ${WD[(x.J+1)%7]}요일${x.J===J_TODAY?' (오늘)':''}입니다<small>로또 운 ${gl} (${x.score>0?'+':''}${x.score}점) · ${JAESIN[x.s]}쪽 판매점에서 한 장</small></div><button data-j="${x.J}">이날 자세히 보기</button>`;
+    ans.innerHTML=`<div class="q">${roundOf(a)}회, 당신의 날은</div><div class="a">${c.m}월 ${c.d}일 ${WD[(x.J+1)%7]}요일${x.J===J_TODAY?' (오늘)':''}입니다<small>로또 운 ${gl} (${x.score>0?'+':''}${x.score}점) · ${JAESIN[x.s]}쪽 판매점</small></div><button data-j="${x.J}">이날 자세히 보기</button>`;
     ans.querySelector('button').addEventListener('click',e=>{ selJ=+e.target.dataset.j; renderDay(); show('day'); }); }
   else { let nb=null; for(let i=1;i<60&&!nb;i++){const x=scoreDay(me,satJ+i); if(x.score>=2) nb=x;}
     ans.innerHTML=`<div class="q">${roundOf(a)}회</div><div class="a">이 회차엔 당신의 날이<br>남아 있지 않습니다<small>${nb?`다음 좋은 날은 ${fmtK(nb.J)}(${roundOf(nb.J-((nb.J+1)%7))}회)입니다. 이번 회차는 쉬거나, 토요일 저녁 8시 전에 한 장만 사세요.`:'이번 회차는 쉬어도 됩니다.'}</small></div>`; }
@@ -537,8 +537,8 @@ function icsFor(list){ // list: [{J, title, desc}]
   return `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//jaemul-gilil//KO\r\nCALSCALE:GREGORIAN\r\n${ev}\r\nEND:VCALENDAR\r\n`;
 }
 function downloadIcs(text,name){ const blob=new Blob([text],{type:'text/calendar;charset=utf-8'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(url); a.remove();},1000); }
-$('icsDay').addEventListener('click',()=>{ const x=scoreDay(ME,selJ); const [gl]=grade(x.score); downloadIcs(icsFor([{J:selJ,title:`로또 사는 날 (${gl}, ${JAESIN[x.s]}쪽 판매점)`,desc:`로또 운 ${gl}(${x.score}). 지금 있는 곳에서 ${JAESIN[x.s]}쪽 판매점. 한 장이면 충분합니다.`}]),`lotto-${fmt(selJ)}.ics`); });
-$('icsWeek').addEventListener('click',()=>{ const a=WEEK0+weekOff*7; const days=[]; for(let i=0;i<7;i++){const x=scoreDay(ME,a+i); if(x.score>=2) days.push({J:x.J,title:`로또 사는 날 (${grade(x.score)[0]}, ${JAESIN[x.s]}쪽)`,desc:`로또 운 ${grade(x.score)[0]}(${x.score}). ${JAESIN[x.s]}쪽 판매점에서 한 장.`});}
+$('icsDay').addEventListener('click',()=>{ const x=scoreDay(ME,selJ); const [gl]=grade(x.score); downloadIcs(icsFor([{J:selJ,title:`로또 사는 날 (${gl}, ${JAESIN[x.s]}쪽 판매점)`,desc:`로또 운 ${gl}(${x.score}). 지금 있는 곳에서 ${JAESIN[x.s]}쪽 판매점.`}]),`lotto-${fmt(selJ)}.ics`); });
+$('icsWeek').addEventListener('click',()=>{ const a=WEEK0+weekOff*7; const days=[]; for(let i=0;i<7;i++){const x=scoreDay(ME,a+i); if(x.score>=2) days.push({J:x.J,title:`로또 사는 날 (${grade(x.score)[0]}, ${JAESIN[x.s]}쪽)`,desc:`로또 운 ${grade(x.score)[0]}(${x.score}). ${JAESIN[x.s]}쪽 판매점.`});}
   if(!days.length){ const b=$('icsWeek'); b.textContent='이번 회차엔 좋은 날이 없습니다'; setTimeout(()=>b.textContent='달력에 넣기',2500); return; }
   downloadIcs(icsFor(days),`lotto-${roundOf(a)}.ics`); });
 
@@ -556,7 +556,7 @@ $('dPrev').addEventListener('click',()=>{ selJ--; renderDay(); window.scrollTo(0
 $('dNext').addEventListener('click',()=>{ selJ++; renderDay(); window.scrollTo(0,0); });
 $('copyBtn').addEventListener('click',()=>{ if(!lastDay) return; const x=lastDay; const [gl]=grade(x.score);
   const st=(window.lastHit&&window.lastHit.d)?` ${window.lastHit.d.place_name}(${window.lastHit.d.road_address_name||window.lastHit.d.address_name||''})이 그쪽이래.`:'';
-  const txt=`${fmtK(x.J)}에 로또 가게 좀 같이 가 줄래? 내 사주로 보니 그날이 내 길일(${gl}, ${x.score>0?'+':''}${x.score}점)이고, 내가 있는 데서 ${JAESIN[x.s]}쪽 가게로 가야 한대.${st} 한 장만 사고 올 거야.\n너도 네 길일 봐 봐: https://minam205.github.io/jaemul-gilil/`;
+  const txt=`${fmtK(x.J)}에 로또 가게 좀 같이 가 줄래? 내 사주로 보니 그날이 내 길일(${gl}, ${x.score>0?'+':''}${x.score}점)이고, 내가 있는 데서 ${JAESIN[x.s]}쪽 가게로 가야 한대.${st} 사고 올게.\n너도 네 길일 봐 봐: https://minam205.github.io/jaemul-gilil/`;
   const btn=$('copyBtn'); const done=()=>{btn.textContent='복사했습니다. 카카오톡에 붙여 넣으세요'; setTimeout(()=>btn.textContent='자녀에게 부탁하기',2500);};
   if(navigator.share){ navigator.share({text:txt}).catch(()=>{}); return; }
   try{ navigator.clipboard.writeText(txt).then(done).catch(()=>{btn.textContent=txt;}); }catch(e){ btn.textContent=txt; } });
