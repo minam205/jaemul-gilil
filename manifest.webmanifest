@@ -1,7 +1,7 @@
 {
-  "name": "로또택일",
-  "short_name": "로또택일",
-  "description": "로또 사기 좋은 날과 방향, 내 사주로",
+  "name": "로또 사기 좋은 날",
+  "short_name": "로또 좋은 날",
+  "description": "내 사주로 고른 날과 판매점 방향",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
