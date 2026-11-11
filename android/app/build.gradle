@@ -1,0 +1,19 @@
+plugins { id 'com.android.application' }
+
+// 웹앱(https://minam205.github.io/jaemul-gilil/)을 크롬 엔진으로 띄우는 TWA 껍데기입니다. 앱 자체에는 화면 코드가 없습니다.
+android {
+    namespace 'io.github.minam205.jaemulgilil'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'io.github.minam205.jaemulgilil'
+        minSdk 21
+        targetSdk 34
+        versionCode((System.getenv('VERSION_CODE') ?: '1') as Integer)
+        versionName '1.0.' + (System.getenv('VERSION_CODE') ?: '1')
+    }
+    buildTypes { release { minifyEnabled false } }
+}
+
+dependencies {
+    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
+}
