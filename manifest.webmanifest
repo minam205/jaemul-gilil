@@ -1,7 +1,7 @@
 {
-  "name": "재물 길일 나침반",
-  "short_name": "재물 길일",
-  "description": "사주로 보는 돈 일 보기 좋은 날과 방향",
+  "name": "로또택일",
+  "short_name": "로또택일",
+  "description": "로또 사기 좋은 날과 방향, 내 사주로",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
